@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# PROVIDE: sky-island
+# REQUIRE: DAEMON NETWORKING
+# BEFORE: LOGIN
+# KEYWORD: shutdown
+
+# Add the following lines to /etc/rc.conf to enable sky-island:
+# sky-island_enable="YES"
+#
+# sky-island_enable (bool):	Set to YES to enable sky-island
+#				Default: NO
+# sky-island_conf (str):		sky-island configuration file
+#				Default: ${PREFIX}/etc/sky-island.conf
+# sky-island_user (str):		sky-island daemon user
+#				Default: sky-island
+# sky-island_group (str):		sky-island daemon group
+#				Default: sky-island
+# sky-island_flags (str):		Extra flags passed to sky-island
+#
+# sky-island_facility (str):       Syslog facility to use
+#                               Default: daemon
+# sky-island_priority (str):       Syslog priority to use
+#                               Default: info
+
+. /etc/rc.subr
+
+name="sky-island"
+rcvar=sky-island_enable
+load_rc_config $name
+
+: ${sky-island_enable:="NO"}
+: ${sky-island_user:="sky-island"}
+: ${sky-island_group:="sky-island"}
+: ${sky-island_flags:=""}
+: ${sky-island_facility:="daemon"}
+: ${sky-island_priority:="info"}
+: ${sky-island_conf:="/usr/local/etc/${name}.toml"}
+: ${sky-island_options:="${sky-island_flags} -c ${sky-island_conf}"}
+
+# daemon
+sky-island_pidfile="/var/run/sky-island/${name}.pid"
+procname="/usr/local/bin/${name}"
+command=/usr/sbin/daemon
+start_precmd="sky-island_precmd"
+start_cmd="sky-island_startcmd_logger"
+
+sky-island_precmd()
+{
+    install -d -o ${sky-island_user} /var/run/sky-island/
+}
+
+sky-island_startcmd_daemon()
+{
+    echo "Starting ${name}."
+    /usr/sbin/daemon -c -p ${sky-island_pidfile} -S -s ${sky-island_priority} -l ${sky-island_facility} \
+        -u ${sky-island_user} ${procname} ${sky-island_options}
+}
+
+sky-island_startcmd_logger()
+{
+    echo "Starting ${name}."
+    /usr/sbin/daemon -c -p ${sky-island_pidfile} -u ${sky-island_user} /bin/sh -c "${procname} ${sky-island_options} 2>&1 \
+        | /usr/bin/logger -t ${name} -p ${sky-island_facility}.${sky-island_priority}"
+}
+
+run_rc_command "$1"
