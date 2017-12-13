@@ -64,6 +64,7 @@ func main() {
 	}
 	conf.Release = strings.Trim(string(r), "\n")
 
+	statsd.Address(conf.Jails.MonitoringAddr)
 	metrics, err := statsd.New()
 	if err != nil {
 		log.Print(err)

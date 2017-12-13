@@ -26,6 +26,8 @@ const (
 	goDownloadURL  = "https://redirector.gvt1.com/edgedl/go/go%s.freebsd-amd64.tar.gz"
 )
 
+const rcConf = "/etc/rc.conf"
+
 var basePackages = []string{"base.txz", "lib32.txz", "ports.txz"}
 
 // JailServicer defines the behavior of the Jail service
@@ -305,7 +307,7 @@ func (j *jailService) CreateJail(name string, sl bool) error {
 	if err := j.fsService.CloneBaseToJail(name); err != nil {
 		return err
 	}
-	f, err := os.Create(j.conf.Jails.BaseJailDir + "/" + name + "/etc/rc.conf")
+	f, err := os.Create(j.conf.Jails.BaseJailDir + "/" + name + rcConf)
 	if err != nil {
 		return err
 	}
@@ -364,14 +366,18 @@ func (j *jailService) JailDetails(id int) (*JLS, error) {
 	return nil, fmt.Errorf("jail %d not found", id)
 }
 
-// buildMonitoringJail
-func (j *jailService) buildMonitoringJail() error {
-	if err := j.CreateJail("monitoring", false); err != nil {
+// disableSendmail sets all necessary parameters in the /etc/rc.conf file
+// to make sure that sendmail(8) isn't started
+func disableSendmail() error {
+	etcConf, err := os.OpenFile(rcConf, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
 		return err
 	}
-	// update /etc/jail.conf
-	// start: jail -c monitoring
-	// install monitoring software
+	defer etcConf.Close()
+	etcConf.Write([]byte("sendmail_enable=\"NO\"\n"))
+	etcConf.Write([]byte("sendmail_submit_enable=\"NO\"\n"))
+	etcConf.Write([]byte("sendmail_outbound_enable=\"NO\"\n"))
+	etcConf.Write([]byte("sendmail_msp_queue_enable=\"NO\"\n"))
 	return nil
 }
 
