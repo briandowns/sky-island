@@ -51,19 +51,19 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		var req functionRunRequest
 		if err := json.Unmarshal(b, &req); err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": http.StatusText(http.StatusBadRequest)})
 			return
 		}
 		id := uuid.NewUUID().String()
 		if err := h.jsvc.CreateJail(id, true); err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		defer h.jsvc.RemoveJail(id)
@@ -71,7 +71,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		if req.CacheBust {
 			if err := h.rsvc.RemoveRepo(req.URL); err != nil {
 				h.logger.Info(err.Error())
-				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				return
 			}
 		}
@@ -105,14 +105,14 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		code, err := os.Create(mainFile)
 		if err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		defer code.Close()
 
 		if err = t.Execute(code, td); err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 
@@ -124,7 +124,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		buildResult, err := buildCmd.CombinedOutput()
 		if err != nil {
 			h.logger.Info(string(buildResult))
-			h.ren.JSON(w, 500, map[string]string{"error": string(buildResult)})
+			h.ren.JSON(w, 500, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 
@@ -132,7 +132,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
 		if err := copyBinary(dst, src); err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 
@@ -141,7 +141,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		if req.IP4 {
 			ip, err := h.ipsvc.Allocate()
 			if err != nil {
-				h.ren.JSON(w, 500, map[string]string{"error": err.Error()})
+				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				return
 			}
 			h.logger.Info("received ip allocation: " + ip)
@@ -153,7 +153,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		execRes, err := exec.Command("jail", funcExecArgs...).Output()
 		if err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		h.ren.JSON(w, http.StatusOK, functionRunResponse{Timestamp: time.Now().UTC().Unix(), Data: string(execRes)})

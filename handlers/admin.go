@@ -62,13 +62,13 @@ func (h *handler) updateIPStateHandler() http.HandlerFunc {
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, err.Error())
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		var req ipStateUpdateRequest
 		if err := json.Unmarshal(b, &req); err != nil {
 			h.logger.Info(err.Error())
-			h.ren.JSON(w, http.StatusBadRequest, err.Error())
+			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		ip := net.ParseIP(req.IP)
@@ -82,7 +82,7 @@ func (h *handler) updateIPStateHandler() http.HandlerFunc {
 			return
 		}
 		if err := h.ipsvc.UpdateIPState(ip.String(), req.State); err != nil {
-			h.ren.JSON(w, http.StatusOK, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusOK, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		w.WriteHeader(http.StatusOK)
