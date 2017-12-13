@@ -26,7 +26,7 @@ type Filesystem struct {
 	Compression bool
 }
 
-// IP4
+// IP4 contains necessary components for network connectivity
 type IP4 struct {
 	Interface string
 	StartAddr string
@@ -36,7 +36,8 @@ type IP4 struct {
 	DNS       []string
 }
 
-// Jails
+// Jails contains necessary components to setup
+// the necessary jails
 type Jails struct {
 	BaseJailDir            string
 	CacheDefaultExpiration string
