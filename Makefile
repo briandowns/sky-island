@@ -17,3 +17,6 @@ test:
 clean:
 	go clean
 	rm -f bin/${BINARY}*
+
+release: clean build
+	tar -czf sky-island.tgz bin/${BINARY}

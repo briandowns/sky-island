@@ -50,13 +50,14 @@ func (h *handler) ipsHandler() http.HandlerFunc {
 	}
 }
 
-// ipStateUpdateRequest
+// ipStateUpdateRequest contains a fields seen
+// in a ip state update request
 type ipStateUpdateRequest struct {
 	IP    string `json:"ip"`
 	State byte   `json:"state"`
 }
 
-// updateIPStateHandler
+// updateIPStateHandler receives a request to update the state of an IP address
 func (h *handler) updateIPStateHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		b, err := ioutil.ReadAll(r.Body)

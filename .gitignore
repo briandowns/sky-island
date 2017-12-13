@@ -30,6 +30,7 @@ _testmain.go
 si-server
 ./sky-island
 skyisland
+sky-island.tgz
 
 bin/*
 
