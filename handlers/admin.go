@@ -16,16 +16,16 @@ func (h *handler) statsHandler() http.HandlerFunc {
 	}
 }
 
-// ipsHandler handles requests for the ip service
-func (h *handler) ipsHandler() http.HandlerFunc {
+// networkHandler handles requests for the ip service
+func (h *handler) networkHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vals := r.URL.Query()
 		p, ok := vals["state"]
 		if !ok {
-			h.ren.JSON(w, http.StatusOK, h.ipsvc.Pool())
+			h.ren.JSON(w, http.StatusOK, h.networksvc.Pool())
 			return
 		}
-		pool := h.ipsvc.Pool()
+		pool := h.networksvc.Pool()
 		if p[0] == "available" {
 			var available []string
 			for k := range pool {
@@ -82,7 +82,7 @@ func (h *handler) updateIPStateHandler() http.HandlerFunc {
 			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": "invalid state"})
 			return
 		}
-		if err := h.ipsvc.UpdateIPState(ip.String(), req.State); err != nil {
+		if err := h.networksvc.UpdateIPState(ip.String(), req.State); err != nil {
 			h.ren.JSON(w, http.StatusOK, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}

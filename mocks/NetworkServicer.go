@@ -2,12 +2,12 @@ package mocks
 
 import "github.com/stretchr/testify/mock"
 
-type IPServicer struct {
+type NetworkServicer struct {
 	mock.Mock
 }
 
 // Allocate provides a mock function with given fields:
-func (_m *IPServicer) Allocate() (string, error) {
+func (_m *NetworkServicer) Allocate() (string, error) {
 	ret := _m.Called()
 
 	var r0 string
@@ -28,7 +28,7 @@ func (_m *IPServicer) Allocate() (string, error) {
 }
 
 // Pool provides a mock function with given fields:
-func (_m *IPServicer) Pool() map[string]byte {
+func (_m *NetworkServicer) Pool() map[string]byte {
 	ret := _m.Called()
 
 	var r0 map[string]byte
@@ -44,7 +44,7 @@ func (_m *IPServicer) Pool() map[string]byte {
 }
 
 // UpdateIPState provides a mock function with given fields: _a0, _a1
-func (_m *IPServicer) UpdateIPState(_a0 string, _a1 byte) error {
+func (_m *NetworkServicer) UpdateIPState(_a0 string, _a1 byte) error {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 error

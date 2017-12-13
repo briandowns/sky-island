@@ -14,10 +14,10 @@ import (
 
 // mocks for testing
 var (
-	mockJailSvc = &mocks.JailServicer{}
-	mockRepoSvc = &mocks.RepoServicer{}
-	mockFSSvc   = &mocks.FSServicer{}
-	mockIPSvc   = &mocks.IPServicer{}
+	mockJailSvc    = &mocks.JailServicer{}
+	mockRepoSvc    = &mocks.RepoServicer{}
+	mockFSSvc      = &mocks.FSServicer{}
+	mockNetworkSvc = &mocks.NetworkServicer{}
 )
 
 var testConf = &config.Config{
@@ -40,13 +40,13 @@ var testConf = &config.Config{
 }
 
 var testHandler = &handler{
-	conf:    testConf,
-	logger:  &logrus.Logger{},
-	ren:     render.New(),
-	statsMW: stats.New(),
-	jsvc:    mockJailSvc,
-	ipsvc:   mockIPSvc,
-	fssvc:   mockFSSvc,
+	conf:       testConf,
+	logger:     &logrus.Logger{},
+	ren:        render.New(),
+	statsMW:    stats.New(),
+	jsvc:       mockJailSvc,
+	networksvc: mockNetworkSvc,
+	fssvc:      mockFSSvc,
 }
 
 // TestHealthCheckHandler

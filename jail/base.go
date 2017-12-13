@@ -77,8 +77,8 @@ func (j *jailService) updateBaseJail() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	err := cmd.Wait()
-	return err
+
+	return cmd.Wait()
 }
 
 // setupResolveConf takes the DNS servers from configuration and
