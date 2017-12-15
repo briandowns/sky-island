@@ -96,5 +96,5 @@ func main() {
 	)
 	n.Use(params.StatsMW)
 	n.UseHandler(router)
-	n.Run(":" + strconv.Itoa(conf.HTTP.Port))
+	n.Run(":" + strconv.Itoa(conf.HTTPPort))
 }

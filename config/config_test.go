@@ -5,7 +5,7 @@ import "testing"
 // TestLoad validates that the config.Load function reads
 // the data in the given file
 func TestLoad(t *testing.T) {
-	conf, err := Load("testdata/config.toml")
+	conf, err := Load("testdata/config.json")
 	if err != nil {
 		t.Error(err)
 	}

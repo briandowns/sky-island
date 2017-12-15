@@ -21,19 +21,14 @@ var (
 )
 
 var testConf = &config.Config{
-	System: config.System{
-		LogFile:       "test-log-file.log",
-		GoVersion:     "1.9.2",
-		BaseSysPkgDir: "/tmp",
-	},
-	HTTP: config.HTTP{
-		Port:         3280,
-		FrontendPath: "handlers/public/html",
-	},
-	Jails: config.Jails{
+	HTTPPort:      3280,
+	LogFile:       "test-log-file.log",
+	GoVersion:     "1.9.2",
+	BaseSysPkgDir: "/tmp",
+	Jails: &config.Jails{
 		BaseJailDir: "/some/jail/dir",
 	},
-	Filesystem: config.Filesystem{
+	Filesystem: &config.Filesystem{
 		ZFSDataset:  "/zroot/jails",
 		Compression: false,
 	},

@@ -10,15 +10,17 @@ import (
 )
 
 var testConf = &config.Config{
-	Jails: config.Jails{
+	Network: &config.Network{
+		IP4: &config.IP4{
+			Interface: "em0",
+			StartAddr: "192.168.0.20",
+			Range:     220,
+		},
+	},
+	Jails: &config.Jails{
 		BaseJailDir:            "",
 		CacheDefaultExpiration: "24h",
 		CachePurgeAfter:        "48h",
-	},
-	IP4: config.IP4{
-		Interface: "em0",
-		StartAddr: "192.168.0.20",
-		Range:     220,
 	},
 }
 

@@ -46,13 +46,13 @@ func NewNetworkService(conf *config.Config, l *logrus.Logger, metrics *statsd.Cl
 func (n *networkService) populatePool() error {
 	t := n.metrics.NewTiming()
 	defer t.Send("populate_pool")
-	ip := net.ParseIP(n.conf.IP4.StartAddr)
+	ip := net.ParseIP(n.conf.Network.IP4.StartAddr)
 	ip = ip.To4()
 	if ip == nil {
 		return errors.New("bad start IP provided in config")
 	}
 	n.ip4Pool[ip.String()] = 0
-	for j := ip[3]; int(j) < n.conf.IP4.Range; j++ {
+	for j := ip[3]; int(j) < n.conf.Network.IP4.Range; j++ {
 		ip[3]++
 		n.ip4Pool[ip.String()] = 0
 	}

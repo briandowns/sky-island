@@ -1,59 +1,52 @@
 package config
 
 import (
+	"encoding/json"
 	"io/ioutil"
-
-	"github.com/pelletier/go-toml"
 )
-
-// System
-type System struct {
-	Port          int
-	BaseSysPkgDir string
-	GoVersion     string
-	LogFile       string
-}
-
-// HTTP
-type HTTP struct {
-	Port         int
-	FrontendPath string
-}
 
 // Filesystem
 type Filesystem struct {
-	ZFSDataset  string
-	Compression bool
+	ZFSDataset  string `json:"zfs_dataset"`
+	Compression bool   `json:"compression"`
+}
+
+// Network
+type Network struct {
+	IP4 *IP4 `json:"ip4"`
 }
 
 // IP4 contains necessary components for network connectivity
 type IP4 struct {
-	Interface string
-	StartAddr string
-	Mask      string
-	Range     int
-	Gateway   string
-	DNS       []string
+	Interface string   `json:"interface"`
+	StartAddr string   `json:"start_addr"`
+	Mask      string   `json:"mask"`
+	Range     int      `json:"range"`
+	Gateway   string   `json:"gateway"`
+	DNS       []string `json:"dns"`
 }
 
 // Jails contains necessary components to setup
 // the necessary jails
 type Jails struct {
-	BaseJailDir            string
-	CacheDefaultExpiration string
-	CachePurgeAfter        string
-	ChildrenMax            int
-	MonitoringAddr         string
+	BaseJailDir            string `json:"base_jail_dir"`
+	CacheDefaultExpiration string `json:"cache_default_expiration"`
+	CachePurgeAfter        string `json:"cache_purge_after"`
+	ChildrenMax            int    `json:"children_max"`
+	MonitoringAddr         string `json:"monitoring_addr"`
 }
 
 // Config contains the parameters necessary to run sky-island
 type Config struct {
-	Release    string
-	HTTP       HTTP
-	Filesystem Filesystem
-	System     System
-	Jails      Jails
-	IP4        IP4
+	Release       string
+	SystemPort    int         `json:"system_port"`
+	HTTPPort      int         `json:"http_port"`
+	GoVersion     string      `json:"go_version"`
+	BaseSysPkgDir string      `json:"base_sys_pkg_dir"`
+	LogFile       string      `json:"log_file"`
+	Filesystem    *Filesystem `json:"filesystem"`
+	Network       *Network    `json:"network"`
+	Jails         *Jails      `json:"jails"`
 }
 
 // Load prses the given file and creates a new value
@@ -64,7 +57,7 @@ func Load(confFile string) (*Config, error) {
 		return nil, err
 	}
 	var c Config
-	if err := toml.Unmarshal(f, &c); err != nil {
+	if err := json.Unmarshal(f, &c); err != nil {
 		return nil, err
 	}
 	return &c, nil
