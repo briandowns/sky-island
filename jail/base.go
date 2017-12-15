@@ -86,13 +86,13 @@ func (j *jailService) updateBaseJail() error {
 // settings aren't present in configuration, it will copy from
 // the host system to thet release jail
 func (j *jailService) setupResolvConf() error {
-	if j.conf.IP4.DNS != nil {
+	if j.conf.Network.IP4.DNS != nil {
 		out, err := os.Create(j.conf.Jails.BaseJailDir + "/releases/" + j.conf.Release + "/etc/resolv.conf")
 		if err != nil {
 			return err
 		}
 		defer out.Close()
-		for _, i := range j.conf.IP4.DNS {
+		for _, i := range j.conf.Network.IP4.DNS {
 			out.Write([]byte("nameserver " + i + "\n"))
 		}
 		return nil
@@ -142,7 +142,7 @@ func (j *jailService) setBaseJailConf() error {
 func (j *jailService) downloadGo() error {
 	t := j.metrics.NewTiming()
 	defer t.Send("go.download_time")
-	goTarBall := fmt.Sprintf("/tmp/go%s.freebsd-amd64.tar.gz", j.conf.System.GoVersion)
+	goTarBall := fmt.Sprintf("/tmp/go%s.freebsd-amd64.tar.gz", j.conf.GoVersion)
 	if utils.Exists(goTarBall) {
 		return nil
 	}
@@ -150,7 +150,7 @@ func (j *jailService) downloadGo() error {
 	if err != nil {
 		return err
 	}
-	endpoint := fmt.Sprintf(goDownloadURL, j.conf.System.GoVersion)
+	endpoint := fmt.Sprintf(goDownloadURL, j.conf.GoVersion)
 	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return err
@@ -184,7 +184,7 @@ func (j *jailService) installGo() error {
 	if err := j.downloadGo(); err != nil {
 		return err
 	}
-	src := fmt.Sprintf("/tmp/go%s.freebsd-amd64.tar.gz", j.conf.System.GoVersion)
+	src := fmt.Sprintf("/tmp/go%s.freebsd-amd64.tar.gz", j.conf.GoVersion)
 	dst := fmt.Sprintf("%s/releases/%s/usr/local", j.conf.Jails.BaseJailDir, j.conf.Release)
 	if err := archiver.TarGz.Open(src, dst); err != nil {
 		return err

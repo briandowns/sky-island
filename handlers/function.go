@@ -145,7 +145,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 				return
 			}
 			h.logger.Info("received ip allocation: " + ip)
-			funcExecArgs = append(funcExecArgs, "interface="+h.conf.IP4.Interface, "ip4=new", "ip4.addr="+ip)
+			funcExecArgs = append(funcExecArgs, "interface="+h.conf.Network.IP4.Interface, "ip4=new", "ip4.addr="+ip)
 		} else {
 			funcExecArgs = append(funcExecArgs, "ip4=disable")
 		}

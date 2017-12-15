@@ -105,7 +105,7 @@ func (j *jailService) buildMonitoringJail() error {
 	if err != nil {
 		return err
 	}
-	jc := fmt.Sprintf(monitoringJailConf, j.conf.Jails.BaseJailDir, j.conf.IP4.Interface, j.conf.Jails.MonitoringAddr)
+	jc := fmt.Sprintf(monitoringJailConf, j.conf.Jails.BaseJailDir, j.conf.Network.IP4.Interface, j.conf.Jails.MonitoringAddr)
 	if _, err = f.WriteString(jc); err != nil {
 		f.Close()
 		return err

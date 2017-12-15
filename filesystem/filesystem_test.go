@@ -10,9 +10,12 @@ import (
 )
 
 var testConf = &config.Config{
-	Filesystem: config.Filesystem{
-		Compression: false,
+	Filesystem: &config.Filesystem{
 		ZFSDataset:  "test/dataset",
+		Compression: false,
+	},
+	Jails: &config.Jails{
+		BaseJailDir: "test/dir",
 	},
 }
 
