@@ -112,6 +112,8 @@ func writeConfig(confFile string, data []byte) error {
 	return nil
 }
 
+var monitoringConfigFiles = []string{"influxd.conf", "telegraf.conf", "grafana.conf"}
+
 // buildMonitoringJail creates, configures, and starts
 // the monitoring jail
 func (j *jailService) buildMonitoringJail() error {
@@ -151,22 +153,18 @@ func (j *jailService) buildMonitoringJail() error {
 	if err := j.updateMonitoringRcConf(); err != nil {
 		return err
 	}
-	j.logger.Info("Writing influx config in monitoring jail")
 	ic := j.conf.Jails.BaseJailDir + "/monitoring/usr/local/etc/influxd.conf"
 	if err := writeConfig(ic, []byte(influxConf)); err != nil {
 		return err
 	}
-	j.logger.Info("Writing telegraf config in monitoring jail")
 	tc := j.conf.Jails.BaseJailDir + "/monitoring/usr/local/etc/telegraf.conf"
 	if err := writeConfig(tc, []byte(telegrafConf)); err != nil {
 		return err
 	}
-	j.logger.Info("Writing grafana config in monitoring jail")
 	gc := j.conf.Jails.BaseJailDir + "/monitoring/usr/local/etc/grafana.conf"
 	if err := writeConfig(gc, []byte(grafanaConf)); err != nil {
 		return err
 	}
-	j.logger.Info("Starting monitoring jail")
 	cmd := exec.Command("jail", "-rc", "monitoring")
 	if err := cmd.Start(); err != nil {
 		return err
