@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 const monitoringJailConf = `
@@ -72,22 +73,37 @@ const telegrafConf = `
 `
 
 // updateMonitoringRcConf updates the monitoring jail's
-// /etc/rc.conf file
-func updateMonitoringRcConf() error {
-	etcConf, err := os.OpenFile(rcConf, os.O_APPEND|os.O_WRONLY, 0600)
+// <monitoring jail>/etc/rc.conf file
+func (j *jailService) updateMonitoringRcConf() error {
+	etcConf, err := os.OpenFile(j.conf.Jails.BaseJailDir+"/monitoring/etc/rc.conf", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
 	defer etcConf.Close()
-	etcConf.Write([]byte("influxd_enable=\"YES\"\n"))
+	etcConf.Write([]byte("\ninfluxd_enable=\"YES\"\n"))
 	etcConf.Write([]byte("grafana_enable=\"YES\"\n"))
 	etcConf.Write([]byte("telegraf_enable=\"YES\"\n"))
 	return nil
 }
 
-// writeConfig
+// disableSendmail sets all necessary parameters in the /etc/rc.conf file
+// to make sure that sendmail(8) isn't started
+func (j *jailService) disableMonitoringSendmail() error {
+	etcConf, err := os.OpenFile(j.conf.Jails.BaseJailDir+"/monitoring/etc/rc.conf", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	defer etcConf.Close()
+	etcConf.Write([]byte("\nsendmail_enable=\"NO\"\n"))
+	etcConf.Write([]byte("sendmail_submit_enable=\"NO\"\n"))
+	etcConf.Write([]byte("sendmail_outbound_enable=\"NO\"\n"))
+	etcConf.Write([]byte("sendmail_msp_queue_enable=\"NO\"\n"))
+	return nil
+}
+
+// writeConfig takes the given data and writes it to the file
 func writeConfig(confFile string, data []byte) error {
-	ic, err := os.OpenFile(confFile, os.O_APPEND|os.O_WRONLY, 0600)
+	ic, err := os.Create(confFile)
 	if err != nil {
 		return err
 	}
@@ -96,7 +112,8 @@ func writeConfig(confFile string, data []byte) error {
 	return nil
 }
 
-// buildMonitoringJail
+// buildMonitoringJail creates, configures, and starts
+// the monitoring jail
 func (j *jailService) buildMonitoringJail() error {
 	if err := j.CreateJail("monitoring", false); err != nil {
 		return err
@@ -111,39 +128,48 @@ func (j *jailService) buildMonitoringJail() error {
 		return err
 	}
 	f.Close()
-	if err := disableSendmail(); err != nil {
+	if err := j.disableMonitoringSendmail(); err != nil {
 		return err
 	}
+	j.logger.Info("Starting monitoring jail")
 	res0, err := j.wrapper.CombinedOutput("jail", "-c", "monitoring")
 	if err != nil {
 		return errors.New(string(res0))
 	}
+	j.logger.Info("Installing pkg in monitoring jail")
 	res1, err := j.wrapper.CombinedOutput("pkg", "-j", "monitoring", "install", "-y", "pkg")
 	if err != nil {
 		return errors.New(string(res1))
 	}
+	j.logger.Info("Installing influx, etc... in monitoring jail")
 	res2, err := j.wrapper.CombinedOutput("pkg", "-j", "monitoring", "install", "-y", "influxdb", "telegraf", "grafana4")
 	if err != nil {
 		return errors.New(string(res2))
 	}
-	if err := updateMonitoringRcConf(); err != nil {
-		return errors.New(string(res2))
+	// most of the calls below can be done concurrently
+	j.logger.Info("Updating /etc/rc.conf in monitoring jail")
+	if err := j.updateMonitoringRcConf(); err != nil {
+		return err
 	}
+	j.logger.Info("Writing influx config in monitoring jail")
 	ic := j.conf.Jails.BaseJailDir + "/monitoring/usr/local/etc/influxd.conf"
 	if err := writeConfig(ic, []byte(influxConf)); err != nil {
 		return err
 	}
+	j.logger.Info("Writing telegraf config in monitoring jail")
 	tc := j.conf.Jails.BaseJailDir + "/monitoring/usr/local/etc/telegraf.conf"
 	if err := writeConfig(tc, []byte(telegrafConf)); err != nil {
 		return err
 	}
+	j.logger.Info("Writing grafana config in monitoring jail")
 	gc := j.conf.Jails.BaseJailDir + "/monitoring/usr/local/etc/grafana.conf"
 	if err := writeConfig(gc, []byte(grafanaConf)); err != nil {
 		return err
 	}
-	res3, err := j.wrapper.CombinedOutput("jail", "-rc", "monitoring")
-	if err != nil {
-		return errors.New(string(res3))
+	j.logger.Info("Starting monitoring jail")
+	cmd := exec.Command("jail", "-rc", "monitoring")
+	if err := cmd.Start(); err != nil {
+		return err
 	}
 	return nil
 }

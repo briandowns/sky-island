@@ -177,21 +177,6 @@ func (j *jailService) JailDetails(id int) (*JLS, error) {
 	return nil, fmt.Errorf("jail %d not found", id)
 }
 
-// disableSendmail sets all necessary parameters in the /etc/rc.conf file
-// to make sure that sendmail(8) isn't started
-func disableSendmail() error {
-	etcConf, err := os.OpenFile(rcConf, os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-	defer etcConf.Close()
-	etcConf.Write([]byte("sendmail_enable=\"NO\"\n"))
-	etcConf.Write([]byte("sendmail_submit_enable=\"NO\"\n"))
-	etcConf.Write([]byte("sendmail_outbound_enable=\"NO\"\n"))
-	etcConf.Write([]byte("sendmail_msp_queue_enable=\"NO\"\n"))
-	return nil
-}
-
 // startJail starts the given jail
 func (j *jailService) startJail(name string) error {
 	return nil
