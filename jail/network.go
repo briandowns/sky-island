@@ -5,8 +5,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
@@ -19,7 +19,7 @@ type NetworkServicer interface {
 
 // ipService holds the state of the service
 type networkService struct {
-	logger  *logrus.Logger
+	logger  gklog.Logger
 	conf    *config.Config
 	metrics *statsd.Client
 	mu      sync.Locker
@@ -27,7 +27,7 @@ type networkService struct {
 }
 
 // NewNetworkService creates a new value of type networkService pointer
-func NewNetworkService(conf *config.Config, l *logrus.Logger, metrics *statsd.Client) (NetworkServicer, error) {
+func NewNetworkService(conf *config.Config, l gklog.Logger, metrics *statsd.Client) (NetworkServicer, error) {
 	n := networkService{
 		logger:  l,
 		conf:    conf,

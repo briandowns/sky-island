@@ -62,27 +62,30 @@ func (h *handler) updateIPStateHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		var req ipStateUpdateRequest
 		if err := json.Unmarshal(b, &req); err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		ip := net.ParseIP(req.IP)
 		ip = ip.To4()
 		if ip == nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": "invalid IP4 address"})
 			return
 		}
 		if !jail.ValidIPState(req.State) {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": "invalid state"})
 			return
 		}
 		if err := h.networksvc.UpdateIPState(ip.String(), req.State); err != nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusOK, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}

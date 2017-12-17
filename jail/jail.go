@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/filesystem"
 	"github.com/briandowns/sky-island/utils"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
@@ -36,7 +36,7 @@ type JailServicer interface {
 
 // jailService holds the state of the service
 type jailService struct {
-	logger    *logrus.Logger
+	logger    gklog.Logger
 	conf      *config.Config
 	hc        *http.Client
 	metrics   *statsd.Client
@@ -45,7 +45,7 @@ type jailService struct {
 }
 
 // NewJailService creates a new value of type jailService pointer
-func NewJailService(conf *config.Config, l *logrus.Logger, m *statsd.Client, w utils.Wrapper) JailServicer {
+func NewJailService(conf *config.Config, l gklog.Logger, m *statsd.Client, w utils.Wrapper) JailServicer {
 	return &jailService{
 		logger: l,
 		conf:   conf,
@@ -78,39 +78,39 @@ func (j *jailService) configureJailHostname(name string) error {
 func (j *jailService) InitializeSystem() error {
 	t := j.metrics.NewTiming()
 	defer t.Send("initialize_system")
-	j.logger.Info("creating ZFS dataset")
+	j.logger.Log("msg", "creating ZFS dataset")
 	if err := j.fsService.CreateDataset(); err != nil {
 		return err
 	}
-	j.logger.Info("downloading base system")
+	j.logger.Log("msg", "downloading base system")
 	if err := j.downloadBaseSystem(); err != nil {
 		return err
 	}
-	j.logger.Info("extracting packages into base jail")
+	j.logger.Log("msg", "extracting packages into base jail")
 	if err := j.extractBasePkgs(); err != nil {
 		return err
 	}
-	j.logger.Info("updating base jail")
+	j.logger.Log("msg", "updating base jail")
 	if err := j.updateBaseJail(); err != nil {
 		return err
 	}
-	j.logger.Info("setting base jail config")
+	j.logger.Log("msg", "setting base jail config")
 	if err := j.setBaseJailConf(); err != nil {
 		return err
 	}
-	j.logger.Info("installing Go")
+	j.logger.Log("msg", "installing Go")
 	if err := j.installGo(); err != nil {
 		return err
 	}
-	j.logger.Info("creating base jail snapshot")
+	j.logger.Log("msg", "creating base jail snapshot")
 	if err := j.fsService.CreateSnapshot(); err != nil {
 		return err
 	}
-	j.logger.Info("creating build jail")
+	j.logger.Log("msg", "creating build jail")
 	if err := j.CreateJail("build", false); err != nil {
 		return err
 	}
-	j.logger.Info("creating monitoring jail")
+	j.logger.Log("msg", "creating monitoring jail")
 	return j.buildMonitoringJail()
 }
 
@@ -147,7 +147,7 @@ func (j *jailService) RemoveJail(name string) error {
 	t := j.metrics.NewTiming()
 	defer t.Send("remove_jail_time")
 	if err := j.fsService.RemoveDataset(name); err != nil {
-		j.logger.Error(err)
+		j.logger.Log("error", err.Error())
 		return err
 	}
 	j.metrics.Histogram("removed", 1)

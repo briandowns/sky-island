@@ -3,17 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
 	"strconv"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/handlers"
 	"github.com/briandowns/sky-island/jail"
+	"github.com/briandowns/sky-island/log"
 	"github.com/briandowns/sky-island/utils"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
@@ -50,16 +49,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	output := os.Stderr
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	logrus.SetOutput(output)
-	logger := logrus.New()
-	log.SetOutput(output)
-	log.SetFlags(0)
+	logger, err := log.Logger(conf, "sky-island")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	r, err := exec.Command("uname", "-r").Output()
 	if err != nil {
-		logger.Error(err)
+		logger.Log("error", err.Error())
 		os.Exit(1)
 	}
 	conf.Release = strings.Trim(string(r), "\n")
@@ -67,20 +65,20 @@ func main() {
 	statsd.Address(conf.Jails.MonitoringAddr)
 	metrics, err := statsd.New()
 	if err != nil {
-		log.Print(err)
+		logger.Log("error", err.Error())
 	}
 	defer metrics.Close()
 
 	if initFlag {
 		jsvc := jail.NewJailService(conf, logger, metrics, utils.Wrap{})
 		if err := jsvc.InitializeSystem(); err != nil {
-			logger.Info(err)
+			logger.Log("error", err.Error())
 			os.Exit(0)
 		}
 		os.Exit(0)
 	}
 
-	logger.Info("starting API...")
+	logger.Log("msg", "starting API...")
 
 	router := mux.NewRouter()
 	params := handlers.Params{

@@ -3,8 +3,8 @@ package jail
 import (
 	"os"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 	"gopkg.in/src-d/go-git.v4"
 )
@@ -17,13 +17,13 @@ type RepoServicer interface {
 
 // repoService
 type repoService struct {
-	logger  *logrus.Logger
+	logger  gklog.Logger
 	conf    *config.Config
 	metrics *statsd.Client
 }
 
 // newRepoService
-func NewRepoService(conf *config.Config, l *logrus.Logger, metrics *statsd.Client) RepoServicer {
+func NewRepoService(conf *config.Config, l gklog.Logger, metrics *statsd.Client) RepoServicer {
 	return &repoService{
 		logger:  l,
 		conf:    conf,

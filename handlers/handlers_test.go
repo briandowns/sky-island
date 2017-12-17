@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/mocks"
+	gklog "github.com/go-kit/kit/log"
 	"github.com/thoas/stats"
 	"github.com/unrolled/render"
 )
@@ -36,7 +36,7 @@ var testConf = &config.Config{
 
 var testHandler = &handler{
 	conf:       testConf,
-	logger:     &logrus.Logger{},
+	logger:     gklog.NewNopLogger(),
 	ren:        render.New(),
 	statsMW:    stats.New(),
 	jsvc:       mockJailSvc,

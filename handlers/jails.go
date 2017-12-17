@@ -14,7 +14,7 @@ func (h *handler) jailsRunningHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jls, err := jail.JLSRun(utils.Wrap{})
 		if err != nil {
-			h.logger.Error(err)
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
@@ -34,10 +34,12 @@ func (h *handler) jailDetailsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jid, err := jailID(r)
 		if err != nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 		}
 		jail, err := h.jsvc.JailDetails(jid)
 		if err != nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 		}
 		h.ren.JSON(w, http.StatusOK, map[string]interface{}{"details": jail})
@@ -50,9 +52,11 @@ func (h *handler) killJailHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jid, err := jailID(r)
 		if err != nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 		}
 		if err := h.jsvc.KillJail(jid); err != nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 		}
 		h.ren.JSON(w, http.StatusOK, map[string]int{"deleted": jid})
@@ -65,10 +69,12 @@ func (h *handler) killAllJailsHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		jails, err := jail.JLSRun(utils.Wrap{})
 		if err != nil {
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 		}
 		for _, j := range jails {
 			if err := h.jsvc.KillJail(j.JID); err != nil {
+				h.logger.Log("error", err.Error())
 				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			}
 		}

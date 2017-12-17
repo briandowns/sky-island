@@ -4,13 +4,13 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
 // TestNewNetworkService
 func TestNewNetworkService(t *testing.T) {
-	networkSvc, err := NewNetworkService(testConf, &logrus.Logger{}, &statsd.Client{})
+	networkSvc, err := NewNetworkService(testConf, gklog.NewNopLogger(), &statsd.Client{})
 	if err != nil {
 		t.Error("expected err to be nil")
 	}
@@ -22,7 +22,7 @@ func TestNewNetworkService(t *testing.T) {
 // TestPopulatePool
 func TestPopulatePool(t *testing.T) {
 	networkSvc := &networkService{
-		logger:  &logrus.Logger{},
+		logger:  gklog.NewNopLogger(),
 		conf:    testConf,
 		metrics: &statsd.Client{},
 		mu:      &sync.Mutex{},

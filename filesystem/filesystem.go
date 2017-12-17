@@ -1,9 +1,9 @@
 package filesystem
 
 import (
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/utils"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
@@ -18,7 +18,7 @@ type FSServicer interface {
 
 // fsService
 type fsService struct {
-	logger  *logrus.Logger
+	logger  gklog.Logger
 	conf    *config.Config
 	wrapper utils.Wrapper
 	metrics *statsd.Client
@@ -26,7 +26,7 @@ type fsService struct {
 
 // NewFilesystemService creates a new value of type FileSystemService which provides the dependencies
 // to the service methods
-func NewFilesystemService(conf *config.Config, l *logrus.Logger, metrics *statsd.Client, w utils.Wrapper) FSServicer {
+func NewFilesystemService(conf *config.Config, l gklog.Logger, metrics *statsd.Client, w utils.Wrapper) FSServicer {
 	return &fsService{
 		logger:  l,
 		conf:    conf,

@@ -50,19 +50,19 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		var req functionRunRequest
 		if err := json.Unmarshal(b, &req); err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": http.StatusText(http.StatusBadRequest)})
 			return
 		}
 		id := uuid.NewUUID().String()
 		if err := h.jsvc.CreateJail(id, true); err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
@@ -70,7 +70,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 
 		if req.CacheBust {
 			if err := h.rsvc.RemoveRepo(req.URL); err != nil {
-				h.logger.Info(err.Error())
+				h.logger.Log("error", err.Error())
 				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				return
 			}
@@ -78,7 +78,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 
 		clonePath := h.conf.Jails.BaseJailDir + buildJailSrcDirPath
 		if !utils.Exists(clonePath + req.URL) {
-			h.logger.Infof("cloning %s", req.URL)
+			h.logger.Log("msg", "cloning "+req.URL)
 			h.rsvc.CloneRepo(clonePath, req.URL)
 		}
 
@@ -90,28 +90,28 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		}
 		t, err := template.New(req.URL).Parse(mainTmpl)
 		if err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, 500, map[string]string{"error": err.Error()})
 			return
 		}
 		cmdDir := fmt.Sprintf(cmdDirPath, h.conf.Jails.BaseJailDir, req.URL)
 		if !utils.Exists(cmdDir) {
 			if err := os.Mkdir(cmdDir, os.ModePerm); err != nil {
-				h.logger.Info(err.Error())
+				h.logger.Log("error", err.Error())
 			}
 		}
 
 		mainFile := fmt.Sprintf(mainFilePath, h.conf.Jails.BaseJailDir, req.URL)
 		code, err := os.Create(mainFile)
 		if err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		defer code.Close()
 
 		if err = t.Execute(code, td); err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
@@ -123,7 +123,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		buildCmd := exec.Command("jail", fullBuildArgs...)
 		buildResult, err := buildCmd.CombinedOutput()
 		if err != nil {
-			h.logger.Info(string(buildResult))
+			h.logger.Log("error", string(buildResult))
 			h.ren.JSON(w, 500, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
@@ -131,7 +131,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		src := filepath.Join(h.conf.Jails.BaseJailDir, "build/tmp", id)
 		dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
 		if err := copyBinary(dst, src); err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
@@ -141,10 +141,11 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		if req.IP4 {
 			ip, err := h.networksvc.Allocate()
 			if err != nil {
+				h.logger.Log("error", err.Error())
 				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				return
 			}
-			h.logger.Info("received ip allocation: " + ip)
+			h.logger.Log("msg", "received ip allocation: "+ip)
 			funcExecArgs = append(funcExecArgs, "interface="+h.conf.Network.IP4.Interface, "ip4=new", "ip4.addr="+ip)
 		} else {
 			funcExecArgs = append(funcExecArgs, "ip4=disable")
@@ -152,7 +153,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		funcExecArgs = append(funcExecArgs, "command=/tmp/"+id)
 		execRes, err := exec.Command("jail", funcExecArgs...).Output()
 		if err != nil {
-			h.logger.Info(err.Error())
+			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}

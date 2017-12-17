@@ -133,23 +133,23 @@ func (j *jailService) buildMonitoringJail() error {
 	if err := j.disableMonitoringSendmail(); err != nil {
 		return err
 	}
-	j.logger.Info("Starting monitoring jail")
+	j.logger.Log("msg", "Starting monitoring jail")
 	res0, err := j.wrapper.CombinedOutput("jail", "-c", "monitoring")
 	if err != nil {
 		return errors.New(string(res0))
 	}
-	j.logger.Info("Installing pkg in monitoring jail")
+	j.logger.Log("msg", "Installing pkg in monitoring jail")
 	res1, err := j.wrapper.CombinedOutput("pkg", "-j", "monitoring", "install", "-y", "pkg")
 	if err != nil {
 		return errors.New(string(res1))
 	}
-	j.logger.Info("Installing influx, etc... in monitoring jail")
+	j.logger.Log("msg", "Installing influx, etc... in monitoring jail")
 	res2, err := j.wrapper.CombinedOutput("pkg", "-j", "monitoring", "install", "-y", "influxdb", "telegraf", "grafana4")
 	if err != nil {
 		return errors.New(string(res2))
 	}
 	// most of the calls below can be done concurrently
-	j.logger.Info("Updating /etc/rc.conf in monitoring jail")
+	j.logger.Log("msg", "Updating /etc/rc.conf in monitoring jail")
 	if err := j.updateMonitoringRcConf(); err != nil {
 		return err
 	}

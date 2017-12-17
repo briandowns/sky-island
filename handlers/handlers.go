@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/filesystem"
 	"github.com/briandowns/sky-island/jail"
 	"github.com/briandowns/sky-island/utils"
+	gklog "github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	"github.com/thoas/stats"
 	"github.com/unrolled/render"
@@ -17,7 +17,7 @@ import (
 // Params
 type Params struct {
 	Conf    *config.Config
-	Logger  *logrus.Logger
+	Logger  gklog.Logger
 	StatsMW *stats.Stats
 	Metrics *statsd.Client
 }
@@ -26,7 +26,7 @@ type Params struct {
 type handler struct {
 	ren        *render.Render
 	conf       *config.Config
-	logger     *logrus.Logger
+	logger     gklog.Logger
 	statsMW    *stats.Stats
 	metrics    *statsd.Client
 	rsvc       jail.RepoServicer
@@ -37,7 +37,7 @@ type handler struct {
 
 // AddHandlers builds all endpoints to be passed into the
 func AddHandlers(router *mux.Router, p *Params) error {
-	p.Logger.Info("initializing route handlers")
+	p.Logger.Log("msg", "initializing route handlers")
 	networksvc, err := jail.NewNetworkService(p.Conf, p.Logger, p.Metrics.Clone(statsd.Prefix("network")))
 	if err != nil {
 		return err

@@ -3,9 +3,9 @@ package jail
 import (
 	"testing"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/utils"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
@@ -26,7 +26,7 @@ var testConf = &config.Config{
 
 // TestNewJailService
 func TestNewJailService(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -34,7 +34,7 @@ func TestNewJailService(t *testing.T) {
 
 // TestDownloadBaseSystem
 func TestDownloadBaseSystem(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -43,7 +43,7 @@ func TestDownloadBaseSystem(t *testing.T) {
 
 // TestExtractBasePkgs
 func TestExtractBasePkgs(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -51,7 +51,7 @@ func TestExtractBasePkgs(t *testing.T) {
 
 // TestUpdateBaseJail
 func TestUpdateBaseJail(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -59,7 +59,7 @@ func TestUpdateBaseJail(t *testing.T) {
 
 // TestSetBaseJailConf
 func TestSetBaseJailConf(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -67,7 +67,7 @@ func TestSetBaseJailConf(t *testing.T) {
 
 // TestConfigureJailHostname
 func TestConfigureJailHostname(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -75,7 +75,7 @@ func TestConfigureJailHostname(t *testing.T) {
 
 // TestDownloadGo
 func TestDownloadGo(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -83,7 +83,7 @@ func TestDownloadGo(t *testing.T) {
 
 // TestInitializeSystem
 func TestInitializeSystem(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -91,7 +91,7 @@ func TestInitializeSystem(t *testing.T) {
 
 // TestCreateJail
 func TestCreateJail(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}
@@ -99,7 +99,7 @@ func TestCreateJail(t *testing.T) {
 
 // TestRemoveJail
 func TestRemoveJail(t *testing.T) {
-	jailSvc := NewJailService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	jailSvc := NewJailService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if jailSvc == nil {
 		t.Error("expected not nil jail service")
 	}

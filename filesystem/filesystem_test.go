@@ -3,9 +3,9 @@ package filesystem
 import (
 	"testing"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/utils"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
@@ -21,7 +21,7 @@ var testConf = &config.Config{
 
 // TestNewFilesystemService
 func TestNewFilesystemService(t *testing.T) {
-	fsSvc := NewFilesystemService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	fsSvc := NewFilesystemService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if fsSvc == nil {
 		t.Error("expected not nil filesystem service")
 	}
@@ -29,7 +29,7 @@ func TestNewFilesystemService(t *testing.T) {
 
 // TestCreateBaseJailDataset
 func TestCreateBaseJailDataset(t *testing.T) {
-	fsSvc := NewFilesystemService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	fsSvc := NewFilesystemService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if fsSvc == nil {
 		t.Error("expected not nil filesystem service")
 	}
@@ -39,7 +39,7 @@ func TestCreateBaseJailDataset(t *testing.T) {
 }
 
 func TestCloneBaseToJail(t *testing.T) {
-	fsSvc := NewFilesystemService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	fsSvc := NewFilesystemService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if fsSvc == nil {
 		t.Error("expected not nil filesystem service")
 	}
@@ -50,7 +50,7 @@ func TestCloneBaseToJail(t *testing.T) {
 
 // TestCreateDataset
 func TestCreateDataset(t *testing.T) {
-	fsSvc := NewFilesystemService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	fsSvc := NewFilesystemService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if fsSvc == nil {
 		t.Error("expected not nil filesystem service")
 	}
@@ -61,7 +61,7 @@ func TestCreateDataset(t *testing.T) {
 
 // TestCreateSnapshot
 func TestCreateSnapshot(t *testing.T) {
-	fsSvc := NewFilesystemService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	fsSvc := NewFilesystemService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if fsSvc == nil {
 		t.Error("expected not nil filesystem service")
 	}
@@ -72,7 +72,7 @@ func TestCreateSnapshot(t *testing.T) {
 
 // TestRemoveDataset
 func TestRemoveDataset(t *testing.T) {
-	fsSvc := NewFilesystemService(testConf, &logrus.Logger{}, &statsd.Client{}, utils.NoOpWrapper{})
+	fsSvc := NewFilesystemService(testConf, gklog.NewNopLogger(), &statsd.Client{}, utils.NoOpWrapper{})
 	if fsSvc == nil {
 		t.Error("expected not nil filesystem service")
 	}

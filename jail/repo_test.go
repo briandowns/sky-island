@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
+	gklog "github.com/go-kit/kit/log"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
 
@@ -17,7 +17,7 @@ func removeTempRepos() {
 // from the given URL
 func TestCloneRepo(t *testing.T) {
 	defer removeTempRepos()
-	rs := NewRepoService(testConf, &logrus.Logger{}, &statsd.Client{})
+	rs := NewRepoService(testConf, gklog.NewNopLogger(), &statsd.Client{})
 	if err := rs.CloneRepo("/tmp", "github.com/briandowns/smile"); err != nil {
 		t.Error(err)
 	}
@@ -27,7 +27,7 @@ func TestCloneRepo(t *testing.T) {
 // when trying to clone a repo from a bad URL
 func TestCloneRepo_Failure(t *testing.T) {
 	defer removeTempRepos()
-	rs := NewRepoService(testConf, &logrus.Logger{}, &statsd.Client{})
+	rs := NewRepoService(testConf, gklog.NewNopLogger(), &statsd.Client{})
 	if err := rs.CloneRepo("/tmp", "github.com/briandown/smile"); err == nil {
 		t.Error("expected error but received none")
 	}
