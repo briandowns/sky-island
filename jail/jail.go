@@ -1,6 +1,7 @@
 package jail
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"os"
@@ -50,6 +51,9 @@ func NewJailService(conf *config.Config, l *logrus.Logger, m *statsd.Client, w u
 		conf:   conf,
 		hc: &http.Client{
 			Timeout: time.Second * 300,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
 		},
 		metrics:   m,
 		fsService: filesystem.NewFilesystemService(conf, l, m, w),
