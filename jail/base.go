@@ -77,7 +77,6 @@ func (j *jailService) updateBaseJail() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-
 	return cmd.Wait()
 }
 
