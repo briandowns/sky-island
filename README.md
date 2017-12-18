@@ -16,6 +16,7 @@ Upon successfully accepting the inbound request, the server will check if the re
 
 ## Requirements
 
+* lib32.txz installed
 * ZFS
 * Go version >= 1.9 
 * Make sure that `jails_enabled="YES"` is present in the "/etc/rc.conf" file
@@ -31,16 +32,17 @@ Initialzing the system does a number of things to make running Sky Island easier
 * Set some basic jail configuration
 * Install Go and create a workspace
 * Create a ZFS snapshot of the base jail
+* Create `build` jail
 
 This is accomplished by running: 
 
-`si-server -c config.json -i`
+`sky-island -c config.json -i`
 
 ## Running Sky Island
 
 To run Sky Island, run the command below.
 
-`si-server -c config.json` 
+`sky-island -c config.json` 
 
 ## IP Address Management
 
@@ -51,6 +53,8 @@ A Sky Island config file has an IP4 section to configure how it handles jails IP
 Rather than cloning the repo each time it's called, the previously cloned repo is cached in the build jail indefinitely. This cache can be busted however on a repo by repo basis by including `cache_bust=true` in payload of a "function run" POST request. This will force Sky Island to clone the repo and build a new binary.
 
 ## API
+
+The Sky Island API provides insight into the Sky Island system. The healthcheck endpoint is not protected by header auth however the admin endpoints are. This can be configured by fields in the `config.json` file by setting the 'admin_api_token' and 'admin_token_header' fields.
 
 | Method | Resource                    | Description                                                            |
 | :----- | :-------                    | :----------                                                            |

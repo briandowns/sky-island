@@ -1,8 +1,9 @@
 {
     "system_port": 3280,
     "http_port": 3281,
+    "admin_api_token": "asdfasdfasdfasdf",
+    "admin_token_header": "X-Sky-Island-Token",
     "go_version": "1.9.2",
-    "log_file": "sky-island.log",
     "base_sys_pkg_dir": "/tmp/11.1-RELEASE",
     "filesystem": {
         "zfs_dataset": "zroot",
@@ -26,6 +27,6 @@
         "cache_default_expiration": "8h",
         "cache_purge_after": "24h",
         "children_max": 0,
-        "monitoring_addr": "192.168.0.19"
+        "monitoring_addr": "127.0.0.1"
     }
 }

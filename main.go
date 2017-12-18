@@ -15,7 +15,6 @@ import (
 	"github.com/briandowns/sky-island/log"
 	"github.com/briandowns/sky-island/utils"
 	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
 	"github.com/thoas/stats"
 	"gopkg.in/alexcesaro/statsd.v2"
 )
@@ -80,14 +79,17 @@ func main() {
 
 	logger.Log("msg", "starting API...")
 
-	router := mux.NewRouter()
 	params := handlers.Params{
 		Logger:  logger,
 		Conf:    conf,
 		StatsMW: stats.New(),
 		Metrics: metrics,
 	}
-	handlers.AddHandlers(router, &params)
+	router, err := handlers.AddHandlers(&params)
+	if err != nil {
+		logger.Log("error", err.Error())
+		os.Exit(0)
+	}
 	n := negroni.New(
 		negroni.NewRecovery(),
 		negroni.NewLogger(),

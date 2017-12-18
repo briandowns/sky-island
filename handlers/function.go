@@ -79,7 +79,11 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		clonePath := h.conf.Jails.BaseJailDir + buildJailSrcDirPath
 		if !utils.Exists(clonePath + req.URL) {
 			h.logger.Log("msg", "cloning "+req.URL)
-			h.rsvc.CloneRepo(clonePath, req.URL)
+			if err := h.rsvc.CloneRepo(clonePath, req.URL); err != nil {
+				h.logger.Log("error", err.Error())
+				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
+				return
+			}
 		}
 
 		importElems := strings.Split(req.URL, "/")
@@ -91,7 +95,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		t, err := template.New(req.URL).Parse(mainTmpl)
 		if err != nil {
 			h.logger.Log("error", err.Error())
-			h.ren.JSON(w, 500, map[string]string{"error": err.Error()})
+			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 			return
 		}
 		cmdDir := fmt.Sprintf(cmdDirPath, h.conf.Jails.BaseJailDir, req.URL)

@@ -176,18 +176,3 @@ func (j *jailService) JailDetails(id int) (*JLS, error) {
 	}
 	return nil, fmt.Errorf("jail %d not found", id)
 }
-
-// startJail starts the given jail
-func (j *jailService) startJail(name string) error {
-	return nil
-}
-
-// devFSMounted determines if the given jail has devfs mounted
-func (j *jailService) devFSMounted(name string) bool {
-	return false
-}
-
-// unmountDevFS
-func (j *jailService) unmountDevFS(name string) error {
-	return nil
-}

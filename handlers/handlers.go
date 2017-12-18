@@ -14,7 +14,10 @@ import (
 	statsd "gopkg.in/alexcesaro/statsd.v2"
 )
 
-// Params
+const apiPrefix = "/api/v1"
+
+// Params contains the necessary dependencies
+// for the handler type and handlers derived
 type Params struct {
 	Conf    *config.Config
 	Logger  gklog.Logger
@@ -22,7 +25,7 @@ type Params struct {
 	Metrics *statsd.Client
 }
 
-// handler
+// handler contains the state of the api system
 type handler struct {
 	ren        *render.Render
 	conf       *config.Config
@@ -36,11 +39,11 @@ type handler struct {
 }
 
 // AddHandlers builds all endpoints to be passed into the
-func AddHandlers(router *mux.Router, p *Params) error {
+func AddHandlers(p *Params) (*mux.Router, error) {
 	p.Logger.Log("msg", "initializing route handlers")
 	networksvc, err := jail.NewNetworkService(p.Conf, p.Logger, p.Metrics.Clone(statsd.Prefix("network")))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	h := &handler{
 		ren:        render.New(),
@@ -53,21 +56,40 @@ func AddHandlers(router *mux.Router, p *Params) error {
 		jsvc:       jail.NewJailService(p.Conf, p.Logger, p.Metrics.Clone(statsd.Prefix("jail")), utils.Wrap{}),
 		fssvc:      filesystem.NewFilesystemService(p.Conf, p.Logger, p.Metrics.Clone(statsd.Prefix("filesystem")), utils.Wrap{}),
 	}
+	router := mux.NewRouter()
 	router.HandleFunc("/healthcheck", h.healthcheckHandler()).Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/function", h.functionRunHandler()).Methods(http.MethodPost)
-	router.HandleFunc("/api/v1/admin/api-stats", h.statsHandler()).Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/admin/jails", h.jailsRunningHandler()).Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/admin/jail/{id}", h.jailDetailsHandler()).Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/admin/jail/{id}", h.killJailHandler()).Methods(http.MethodDelete)
-	router.HandleFunc("/api/v1/admin/jails", h.killAllJailsHandler()).Methods(http.MethodDelete)
-	router.HandleFunc("/api/v1/admin/network/ips", h.networkHandler()).Queries("state", "{state}").Methods(http.MethodGet)
-	router.HandleFunc("/api/v1/admin/network/ip", h.updateIPStateHandler()).Methods(http.MethodPut)
-	return nil
+
+	fr := router.PathPrefix(apiPrefix).Subrouter()
+	fr.Path("/function").HandlerFunc(h.functionRunHandler()).Methods(http.MethodPost)
+
+	ar := router.PathPrefix(apiPrefix + "/admin").Subrouter()
+	ar.Path("/api-stats").HandlerFunc(h.auth(h.statsHandler())).Methods(http.MethodGet)
+	ar.Path("/jails").HandlerFunc(h.auth(h.jailsRunningHandler())).Methods(http.MethodGet)
+	ar.Path("/jail/{id}").HandlerFunc(h.auth(h.jailDetailsHandler())).Methods(http.MethodGet)
+	ar.Path("/jail/{id}").HandlerFunc(h.auth(h.killJailHandler())).Methods(http.MethodDelete)
+	ar.Path("/jails").HandlerFunc(h.auth(h.killAllJailsHandler())).Methods(http.MethodDelete)
+	ar.Path("/network/ips").HandlerFunc(h.auth(h.networkHandler())).Queries("state", "{state}").Methods(http.MethodGet)
+	ar.Path("/network/ip").HandlerFunc(h.auth(h.updateIPStateHandler())).Methods(http.MethodPut)
+	return router, nil
 }
 
 // healthcheckHandler handles all healthcheck requests
 func (h *handler) healthcheckHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
+	}
+}
+
+// auth checks to see if the configured header and token are provided
+// in the request
+func (h *handler) auth(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var hdr string
+		if hdr = r.Header.Get(h.conf.AdminTokenHeader); hdr != h.conf.AdminAPIToken {
+			h.logger.Log("error", "unauthorized request received")
+			h.ren.JSON(w, http.StatusForbidden, map[string]string{"error": http.StatusText(http.StatusForbidden)})
+			return
+		}
+		fn(w, r)
 	}
 }
