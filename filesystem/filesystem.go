@@ -47,17 +47,20 @@ func (f *fsService) CreateBaseJailDataset() error {
 func (f *fsService) CloneBaseToJail(jname string) error {
 	t := f.metrics.NewTiming()
 	defer t.Send("dataset_create")
-	_, err := f.wrapper.Output("zfs", "clone", f.conf.Filesystem.ZFSDataset+"/jails/releases/"+f.conf.Release+"@p1", f.conf.Filesystem.ZFSDataset+"/jails/"+jname)
+	base := f.conf.Filesystem.ZFSDataset + "/jails/releases/" + f.conf.Release + "@p1"
+	dataset := f.conf.Filesystem.ZFSDataset + "/jails/" + jname
+	_, err := f.wrapper.Output("zfs", "clone", base, dataset)
 	return err
 }
 
 // CreateDataset creates a new ZFS Dataset
 func (f *fsService) CreateDataset() error {
-	_, err := f.wrapper.Output("zfs", "create", "-p", f.conf.Filesystem.ZFSDataset+"/jails/releases/"+f.conf.Release)
+	dataset := f.conf.Filesystem.ZFSDataset + "/jails/releases/" + f.conf.Release
+	_, err := f.wrapper.Output("zfs", "create", "-p", dataset)
 	return err
 }
 
-// CreateSnapshot creates a ZFS snapshot
+// CreateSnapshot creates a ZFS snapshot of the base jail
 func (f *fsService) CreateSnapshot() error {
 	t := f.metrics.NewTiming()
 	defer t.Send("snapshot_create")

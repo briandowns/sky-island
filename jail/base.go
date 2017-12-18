@@ -134,7 +134,7 @@ func (j *jailService) setBaseJailConf() error {
 	if err := j.setupResolvConf(); err != nil {
 		return err
 	}
-	return j.setupLocaltime()
+	return nil
 }
 
 // downloadGo downloads the configured version of Go only if it hasn't

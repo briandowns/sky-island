@@ -43,7 +43,6 @@ type Config struct {
 	HTTPPort      int         `json:"http_port"`
 	GoVersion     string      `json:"go_version"`
 	BaseSysPkgDir string      `json:"base_sys_pkg_dir"`
-	LogFile       string      `json:"log_file"`
 	Filesystem    *Filesystem `json:"filesystem"`
 	Network       *Network    `json:"network"`
 	Jails         *Jails      `json:"jails"`

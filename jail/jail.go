@@ -107,11 +107,7 @@ func (j *jailService) InitializeSystem() error {
 		return err
 	}
 	j.logger.Log("msg", "creating build jail")
-	if err := j.CreateJail("build", false); err != nil {
-		return err
-	}
-	j.logger.Log("msg", "creating monitoring jail")
-	return j.buildMonitoringJail()
+	return j.CreateJail("build", false)
 }
 
 // CreateJail creates a jail with a name of the given name and

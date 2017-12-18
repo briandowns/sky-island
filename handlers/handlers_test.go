@@ -22,7 +22,6 @@ var (
 
 var testConf = &config.Config{
 	HTTPPort:      3280,
-	LogFile:       "test-log-file.log",
 	GoVersion:     "1.9.2",
 	BaseSysPkgDir: "/tmp",
 	Jails: &config.Jails{

@@ -2,7 +2,6 @@
     "system_port": 3280,
     "http_port": 3281,
     "go_version": "1.9.2",
-    "log_file": "sky-island.log",
     "base_sys_pkg_dir": "/tmp/11.1-RELEASE",
     "filesystem": {
         "zfs_dataset": "zroot",
