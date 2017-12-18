@@ -78,6 +78,10 @@ The Sky Island API provides insight into the Sky Island system. The healthcheck 
 | GET    | /api/v1/admin/ips           | Get a list of IP's filtered by param. `?state={available|unavailable}` |
 | PUT    | /api/v1/admin/ips           | Update the state of a given IP                                         |
 
+## Metrics
+
+By default, Sky Island uses StatsD to write out metrics. Jail created/removed counts, requests times, etc are reported.
+
 ## Contact
 
 Brian Downs [@bdowns328](http://twitter.com/bdowns328)

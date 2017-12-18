@@ -19,13 +19,13 @@ func (h *handler) statsHandler() http.HandlerFunc {
 // networkHandler handles requests for the ip service
 func (h *handler) networkHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		pool := h.networksvc.Pool()
 		vals := r.URL.Query()
 		p, ok := vals["state"]
 		if !ok {
-			h.ren.JSON(w, http.StatusOK, h.networksvc.Pool())
+			h.ren.JSON(w, http.StatusOK, pool)
 			return
 		}
-		pool := h.networksvc.Pool()
 		if p[0] == "available" {
 			var available []string
 			for k := range pool {
