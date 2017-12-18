@@ -62,14 +62,15 @@ func AddHandlers(p *Params) (*mux.Router, error) {
 	fr := router.PathPrefix(apiPrefix).Subrouter()
 	fr.Path("/function").HandlerFunc(h.functionRunHandler()).Methods(http.MethodPost)
 
-	ar := router.PathPrefix(apiPrefix + "/admin").Subrouter()
-	ar.Path("/api-stats").HandlerFunc(h.auth(h.statsHandler())).Methods(http.MethodGet)
-	ar.Path("/jails").HandlerFunc(h.auth(h.jailsRunningHandler())).Methods(http.MethodGet)
-	ar.Path("/jail/{id}").HandlerFunc(h.auth(h.jailDetailsHandler())).Methods(http.MethodGet)
-	ar.Path("/jail/{id}").HandlerFunc(h.auth(h.killJailHandler())).Methods(http.MethodDelete)
-	ar.Path("/jails").HandlerFunc(h.auth(h.killAllJailsHandler())).Methods(http.MethodDelete)
-	ar.Path("/network/ips").HandlerFunc(h.auth(h.networkHandler())).Queries("state", "{state}").Methods(http.MethodGet)
-	ar.Path("/network/ip").HandlerFunc(h.auth(h.updateIPStateHandler())).Methods(http.MethodPut)
+	ar := router.PathPrefix(apiPrefix).Subrouter()
+	ar.Path("/admin/api-stats").HandlerFunc(h.auth(h.statsHandler())).Methods(http.MethodGet)
+	ar.Path("/admin/jails").HandlerFunc(h.auth(h.jailsRunningHandler())).Methods(http.MethodGet)
+	ar.Path("/admin/jail/{id}").HandlerFunc(h.auth(h.jailDetailsHandler())).Methods(http.MethodGet)
+	ar.Path("/admin/jail/{id}").HandlerFunc(h.auth(h.killJailHandler())).Methods(http.MethodDelete)
+	ar.Path("/admin/jails").HandlerFunc(h.auth(h.killAllJailsHandler())).Methods(http.MethodDelete)
+	ar.Path("/admin/network/ips").HandlerFunc(h.auth(h.networkHandler())).Methods(http.MethodGet)
+	ar.Path("/admin/network/ips").HandlerFunc(h.auth(h.networkHandler())).Queries("state", "{state}").Methods(http.MethodGet)
+	ar.Path("/admin/network/ip").HandlerFunc(h.auth(h.updateIPStateHandler())).Methods(http.MethodPut)
 	return router, nil
 }
 

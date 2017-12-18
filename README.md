@@ -52,7 +52,11 @@ To run Sky Island, run the command below.
 
 ## IP Address Management
 
-A Sky Island config file has an IP4 section to configure how it handles jails IP addressing.  If a request is received that indicates it needs an IP address, Sky Island checks to see if there are available addresses and returns one to be assigned to the execution jail.  By default, all jails have no IP address.  For the time being, all assigned IP addresses need to exist on the same network as the host interface. [Issue 32]()https://github.com/briandowns/sky-island/issues/32 has been added to allow for multiple subnets but moreover segregate traffic.
+ Sky Island config file has an IP4 section to configure how it handles jails IP addressing jails.  If a request is received that indicates a jail needs an IP address, Sky Island checks to see if there are available addresses and returns one to be assigned to the execution jail. 
+
+ The subnet that Sky Island exists on should have DHCP turned off or at a minimum, make sure that the IP pools aren't overlapping.
+
+ There will be a future effort to support multiple IP4 pools.
 
 ## Caching
 
@@ -73,6 +77,10 @@ The Sky Island API provides insight into the Sky Island system. The healthcheck 
 | DELETE | /api/v1/admin/jails         | Kill all jails                                                         |
 | GET    | /api/v1/admin/ips           | Get a list of IP's filtered by param. `?state={available|unavailable}` |
 | PUT    | /api/v1/admin/ips           | Update the state of a given IP                                         |
+
+## Metrics
+
+By default, Sky Island uses StatsD to write out metrics. Jail created/removed counts, requests times, etc are reported.
 
 ## Contact
 
