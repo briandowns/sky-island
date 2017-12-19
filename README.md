@@ -5,7 +5,7 @@
   <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.0.0-green.svg?" alt="Version"></a>
 </p>
 
-**Experimental** *ALPHA stage* 
+**Experimental** / *ALPHA stage* 
 
 ## 
 
