@@ -7,7 +7,8 @@ Sky Island is a FreeBSD based, Jail driven, ZFS backed, FaaS/serverless platform
 <p align="left">
   <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.0.0-green.svg?" alt="Version"></a>
 </p>
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause) 
 
 
 ## How It Works
