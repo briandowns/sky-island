@@ -144,7 +144,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				return
 			}
-			h.logger.Log("msg", "using cached binary at: "+binPath)
+			h.logger.Log("msg", "using cached binary: "+binPath)
 			h.ren.JSON(w, http.StatusOK, functionRunResponse{Timestamp: time.Now().UTC().Unix(), Data: string(execRes)})
 			return
 		}

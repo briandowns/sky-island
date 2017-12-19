@@ -1,20 +1,36 @@
 # Sky Island
 
-**Experimental** *ALPHA stage* 
-
-Sky Island is a FaaS/serverless platform built for FreeBSD, Jail driven, on ZFS, for running Go functions.  Interaction is via the REST API.
-
 <p align="left">
   <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-orange.svg?" alt="License"></a>
   <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.0.0-green.svg?" alt="Version"></a>
 </p>
 
+**Experimental** *ALPHA stage* 
+
+Sky Island is a FaaS/serverless platform built for FreeBSD, Jail driven, on ZFS, for running Go functions.  Interaction is via the REST API.
 
 ## How It Works
 
 A request comes in to run a function. The request contains a Github URL to a Go repository containing the function. The request also contains the "call".  The call is what will be run including the arguments necessary to run the function.
 
 Upon successfully accepting the inbound request, the server will check if the repo has already been cloned and if not, it will clone it. From there, it will generate a "main.go" file and compile a binary in the "build" jail. The "build" jail holds all of the cloned repositories and will be reused on each request unless otherwise told not to.  Once a binary is created, an execution jail is created, the binary is copied into it, and is subsequently executed. The binary's output is then returned to the caller via an HTTP response to the original request.
+
+### Example
+
+Simple Call
+```
+curl --silent -XPOST http://demo.skyisland.io:3281/api/v1/function -d '{"url": "github.com/mmcloughlin/geohash", "call": "Encode(100.1, 80.9)"}'
+```
+
+Cache Bust Call
+```
+curl --silent -XPOST http://demo.skyisland.io:3281/api/v1/function -d '{"url": "github.com/mmcloughlin/geohash", "call": "Encode(100.1, 80.9)", "cache_bust": true}'
+```
+
+Result
+```
+{"timestamp":1513717061,"data":"jcc92ytsf8kn"}
+```
 
 ## Requirements
 
@@ -62,7 +78,9 @@ To run Sky Island, run the command below.
 
 ## Caching
 
-Rather than cloning the repo each time Sky Island receives a request for a function therein, the previously cloned repo is cached in the build jail indefinitely. This cache can be busted however by including `cache_bust=true` in payload of a "function run" POST request. This will force Sky Island to clone the repo and build a new binary.
+Sky Island tries it's best to respond to API requests as quickly as possible.  To achieve some level of speed, a number of caching mechanisms has been implemented for binaries and repositories.  Upon receiving a request via the API, Sky Island will check to see if there's an associated binary that's already been compiled. If there is, that artifact is used.  If there's no binary, Sky Island checks to see if the repository has been seen before and if so, uses the repo on disk and compiles a binary from there.  The binary will be added to the binary cache for later use.
+
+This cache can be busted however by including `cache_bust=true` in payload of a "function run" POST request. This will force Sky Island to clone the repo and build a new binary.
 
 ## API
 
