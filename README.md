@@ -7,6 +7,8 @@ Sky Island is a FreeBSD based, Jail driven, ZFS backed, FaaS/serverless platform
 <p align="left">
   <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.0.0-green.svg?" alt="Version"></a>
 </p>
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 
 ## How It Works
 
@@ -60,7 +62,7 @@ To run Sky Island, run the command below.
 
 ## Caching
 
-Rather than cloning the repo each time it's called, the previously cloned repo is cached in the build jail indefinitely. This cache can be busted however on a repo by repo basis by including `cache_bust=true` in payload of a "function run" POST request. This will force Sky Island to clone the repo and build a new binary.
+Rather than cloning the repo each time Sky Island receives a request for a function therein, the previously cloned repo is cached in the build jail indefinitely. This cache can be busted however by including `cache_bust=true` in payload of a "function run" POST request. This will force Sky Island to clone the repo and build a new binary.
 
 ## API
 
