@@ -41,6 +41,10 @@ func main() {
 	flag.StringVar(&configFlag, "c", "", "sky-island configuration file")
 	flag.BoolVar(&initFlag, "i", false, "initialize system")
 	flag.Parse()
+	if configFlag == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	conf, err := config.Load(configFlag)
 	if err != nil {
