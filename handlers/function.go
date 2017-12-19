@@ -45,7 +45,7 @@ type functionRunResponse struct {
 	Data      string `json:"data"`
 }
 
-// build
+// build builds the binary from the request data
 func (h *handler) build(id, url, call string) ([]byte, error) {
 	importElems := strings.Split(url, "/")
 	td := &tmplData{
@@ -80,7 +80,7 @@ func (h *handler) build(id, url, call string) ([]byte, error) {
 	return buildCmd.CombinedOutput()
 }
 
-// execute
+// execute executes the built binary in an execution jail and returns the output
 func (h *handler) execute(id, binPath string, ip4 bool) ([]byte, error) {
 	dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
 	if err := copyBinary(dst, binPath); err != nil {
@@ -100,7 +100,6 @@ func (h *handler) execute(id, binPath string, ip4 bool) ([]byte, error) {
 	}
 	funcExecArgs = append(funcExecArgs, "command=/tmp/"+id)
 	return exec.Command("jail", funcExecArgs...).Output()
-
 }
 
 // functionRunHandler handles requests to run functions
