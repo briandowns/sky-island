@@ -2,6 +2,7 @@ package jail
 
 import (
 	"os"
+	"sync"
 
 	"github.com/briandowns/sky-island/config"
 	gklog "github.com/go-kit/kit/log"
@@ -54,4 +55,40 @@ func (r *repoService) RemoveRepo(repo string) error {
 	}
 	r.metrics.Histogram(repo, 1)
 	return nil
+}
+
+// BinaryCache holds the path to compiled binaries
+type BinaryCache struct {
+	mu    sync.RWMutex
+	cache map[string]string
+}
+
+// NewBinaryCache creates a new value of type
+// BinaryCache pointer. This stores a URL as
+// the key and a path to the compiled binary
+// as the value
+func NewBinaryCache() *BinaryCache {
+	return &BinaryCache{
+		mu:    sync.RWMutex{},
+		cache: make(map[string]string),
+	}
+}
+
+// Get takes a key as an argument and gets the associated
+// value if it exists
+func (b *BinaryCache) Get(k string) string {
+	b.mu.RLock()
+	p, ok := b.cache[k]
+	b.mu.RUnlock()
+	if !ok {
+		return ""
+	}
+	return p
+}
+
+// Set takes a key and a value and sets them in the cache
+func (b *BinaryCache) Set(k, v string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.cache[k] = v
 }
