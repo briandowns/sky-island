@@ -6,20 +6,20 @@ type NetworkServicer struct {
 	mock.Mock
 }
 
-// Allocate provides a mock function with given fields:
-func (_m *NetworkServicer) Allocate() (string, error) {
-	ret := _m.Called()
+// Allocate provides a mock function with given fields: _a0
+func (_m *NetworkServicer) Allocate(_a0 []byte) (string, error) {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func([]byte) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func([]byte) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -28,15 +28,15 @@ func (_m *NetworkServicer) Allocate() (string, error) {
 }
 
 // Pool provides a mock function with given fields:
-func (_m *NetworkServicer) Pool() map[string]byte {
+func (_m *NetworkServicer) Pool() map[string][]byte {
 	ret := _m.Called()
 
-	var r0 map[string]byte
-	if rf, ok := ret.Get(0).(func() map[string]byte); ok {
+	var r0 map[string][]byte
+	if rf, ok := ret.Get(0).(func() map[string][]byte); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]byte)
+			r0 = ret.Get(0).(map[string][]byte)
 		}
 	}
 
@@ -44,11 +44,11 @@ func (_m *NetworkServicer) Pool() map[string]byte {
 }
 
 // UpdateIPState provides a mock function with given fields: _a0, _a1
-func (_m *NetworkServicer) UpdateIPState(_a0 string, _a1 byte) error {
+func (_m *NetworkServicer) UpdateIPState(_a0 string, _a1 []byte) error {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, byte) error); ok {
+	if rf, ok := ret.Get(0).(func(string, []byte) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)

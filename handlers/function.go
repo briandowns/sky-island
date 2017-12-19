@@ -143,7 +143,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 		cm := strconv.Itoa(h.conf.Jails.ChildrenMax)
 		funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
 		if req.IP4 {
-			ip, err := h.networksvc.Allocate()
+			ip, err := h.networksvc.Allocate([]byte(id))
 			if err != nil {
 				h.logger.Log("error", err.Error())
 				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})

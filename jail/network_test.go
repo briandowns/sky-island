@@ -26,7 +26,7 @@ func TestPopulatePool(t *testing.T) {
 		conf:    testConf,
 		metrics: &statsd.Client{},
 		mu:      &sync.Mutex{},
-		ip4Pool: make(map[string]byte),
+		ip4Pool: make(map[string][]byte),
 	}
 	networkSvc.populatePool()
 	poolSize := len(networkSvc.ip4Pool)

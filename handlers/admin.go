@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-
-	"github.com/briandowns/sky-island/jail"
 )
 
 // statsHandler handles API stats processing requests
@@ -29,7 +27,7 @@ func (h *handler) networkHandler() http.HandlerFunc {
 		if p[0] == "available" {
 			var available []string
 			for k := range pool {
-				if pool[k] == 0 {
+				if pool[k] == nil {
 					available = append(available, k)
 				}
 			}
@@ -39,7 +37,7 @@ func (h *handler) networkHandler() http.HandlerFunc {
 		if p[0] == "unavailable" {
 			var unavailable []string
 			for k := range pool {
-				if pool[k] == 1 {
+				if pool[k] != nil {
 					unavailable = append(unavailable, k)
 				}
 			}
@@ -79,12 +77,7 @@ func (h *handler) updateIPStateHandler() http.HandlerFunc {
 			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": "invalid IP4 address"})
 			return
 		}
-		if !jail.ValidIPState(req.State) {
-			h.logger.Log("error", err.Error())
-			h.ren.JSON(w, http.StatusBadRequest, map[string]string{"error": "invalid state"})
-			return
-		}
-		if err := h.networksvc.UpdateIPState(ip.String(), req.State); err != nil {
+		if err := h.networksvc.UpdateIPState(ip.String(), nil); err != nil {
 			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusOK, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
