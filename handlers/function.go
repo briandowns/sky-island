@@ -45,9 +45,68 @@ type functionRunResponse struct {
 	Data      string `json:"data"`
 }
 
+// build
+func (h *handler) build(id, url, call string) ([]byte, error) {
+	importElems := strings.Split(url, "/")
+	td := &tmplData{
+		PKGName:    importElems[len(importElems)-1],
+		ImportPath: url,
+		Call:       call,
+	}
+	t, err := template.New(url).Parse(mainTmpl)
+	if err != nil {
+		return nil, err
+	}
+	cmdDir := fmt.Sprintf(cmdDirPath, h.conf.Jails.BaseJailDir, url)
+	if !utils.Exists(cmdDir) {
+		if err := os.Mkdir(cmdDir, os.ModePerm); err != nil {
+			h.logger.Log("error", err.Error())
+		}
+	}
+	mainFile := fmt.Sprintf(mainFilePath, h.conf.Jails.BaseJailDir, url)
+	code, err := os.Create(mainFile)
+	if err != nil {
+		return nil, err
+	}
+	defer code.Close()
+
+	if err = t.Execute(code, td); err != nil {
+		return nil, err
+	}
+	buildCommand := []string{jailGoBin, "build", "-o", "/tmp/" + id, "-v", url + "/cmd"}
+	fullBuildArgs := []string{"-c", "-n", id, "ip4=disable", "path=" + h.conf.Jails.BaseJailDir + "/build", "host.hostname=build", "mount.devfs"}
+	fullBuildArgs = append(fullBuildArgs, buildCommand...)
+	buildCmd := exec.Command("jail", fullBuildArgs...)
+	return buildCmd.CombinedOutput()
+}
+
+// execute
+func (h *handler) execute(id, binPath string, ip4 bool) ([]byte, error) {
+	dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
+	if err := copyBinary(dst, binPath); err != nil {
+		return nil, err
+	}
+	cm := strconv.Itoa(h.conf.Jails.ChildrenMax)
+	funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
+	if ip4 {
+		ip, err := h.networksvc.Allocate([]byte(id))
+		if err != nil {
+			return nil, err
+		}
+		h.logger.Log("msg", "received ip allocation: "+ip)
+		funcExecArgs = append(funcExecArgs, "interface="+h.conf.Network.IP4.Interface, "ip4=new", "ip4.addr="+ip)
+	} else {
+		funcExecArgs = append(funcExecArgs, "ip4=disable")
+	}
+	funcExecArgs = append(funcExecArgs, "command=/tmp/"+id)
+	return exec.Command("jail", funcExecArgs...).Output()
+
+}
+
 // functionRunHandler handles requests to run functions
 func (h *handler) functionRunHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		defer h.metrics.Histogram("handlers.function.run", 1)
 		b, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			h.logger.Log("error", err.Error())
@@ -74,8 +133,20 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				return
 			}
+			h.binCache.Set(req.URL, "")
 		}
-
+		var binPath string
+		binPath = h.binCache.Get(req.URL)
+		if binPath != "" {
+			execRes, err := h.execute(id, binPath, req.IP4)
+			if err != nil {
+				h.logger.Log("error", err.Error())
+				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
+				return
+			}
+			h.ren.JSON(w, http.StatusOK, functionRunResponse{Timestamp: time.Now().UTC().Unix(), Data: string(execRes)})
+			return
+		}
 		clonePath := h.conf.Jails.BaseJailDir + buildJailSrcDirPath
 		if !utils.Exists(clonePath + req.URL) {
 			h.logger.Log("msg", "cloning "+req.URL)
@@ -85,84 +156,19 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 				return
 			}
 		}
-
-		importElems := strings.Split(req.URL, "/")
-		td := &tmplData{
-			PKGName:    importElems[len(importElems)-1],
-			ImportPath: req.URL,
-			Call:       req.Call,
-		}
-		t, err := template.New(req.URL).Parse(mainTmpl)
+		buildRes, err := h.build(id, req.URL, req.Call)
 		if err != nil {
-			h.logger.Log("error", err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-			return
-		}
-		cmdDir := fmt.Sprintf(cmdDirPath, h.conf.Jails.BaseJailDir, req.URL)
-		if !utils.Exists(cmdDir) {
-			if err := os.Mkdir(cmdDir, os.ModePerm); err != nil {
-				h.logger.Log("error", err.Error())
-			}
-		}
-
-		mainFile := fmt.Sprintf(mainFilePath, h.conf.Jails.BaseJailDir, req.URL)
-		code, err := os.Create(mainFile)
-		if err != nil {
-			h.logger.Log("error", err.Error())
+			h.logger.Log("error", err.Error()+" "+string(buildRes))
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
-		defer code.Close()
-
-		if err = t.Execute(code, td); err != nil {
-			h.logger.Log("error", err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
-			return
-		}
-
-		buildCommand := []string{jailGoBin, "build", "-o", "/tmp/" + id, "-v", req.URL + "/cmd"}
-
-		fullBuildArgs := []string{"-c", "-n", id, "ip4=disable", "path=" + h.conf.Jails.BaseJailDir + "/build", "host.hostname=build", "mount.devfs"}
-		fullBuildArgs = append(fullBuildArgs, buildCommand...)
-		buildCmd := exec.Command("jail", fullBuildArgs...)
-		buildResult, err := buildCmd.CombinedOutput()
-		if err != nil {
-			h.logger.Log("error", string(buildResult))
-			h.ren.JSON(w, 500, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
-			return
-		}
-
-		src := filepath.Join(h.conf.Jails.BaseJailDir, "build/tmp", id)
-		dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
-		if err := copyBinary(dst, src); err != nil {
-			h.logger.Log("error", err.Error())
-			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
-			return
-		}
-
-		cm := strconv.Itoa(h.conf.Jails.ChildrenMax)
-		funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
-		if req.IP4 {
-			ip, err := h.networksvc.Allocate([]byte(id))
-			if err != nil {
-				h.logger.Log("error", err.Error())
-				h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
-				return
-			}
-			h.logger.Log("msg", "received ip allocation: "+ip)
-			funcExecArgs = append(funcExecArgs, "interface="+h.conf.Network.IP4.Interface, "ip4=new", "ip4.addr="+ip)
-		} else {
-			funcExecArgs = append(funcExecArgs, "ip4=disable")
-		}
-		funcExecArgs = append(funcExecArgs, "command=/tmp/"+id)
-		execRes, err := exec.Command("jail", funcExecArgs...).Output()
+		execRes, err := h.execute(id, h.conf.Jails.BaseJailDir+"/build/tmp/"+id, req.IP4)
 		if err != nil {
 			h.logger.Log("error", err.Error())
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
 		h.ren.JSON(w, http.StatusOK, functionRunResponse{Timestamp: time.Now().UTC().Unix(), Data: string(execRes)})
-		h.metrics.Histogram("handlers.function.run", 1)
 	}
 }
 

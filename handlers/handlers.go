@@ -36,6 +36,7 @@ type handler struct {
 	networksvc jail.NetworkServicer
 	jsvc       jail.JailServicer
 	fssvc      filesystem.FSServicer
+	binCache   *jail.BinaryCache
 }
 
 // AddHandlers builds all endpoints to be passed into the
@@ -55,6 +56,7 @@ func AddHandlers(p *Params) (*mux.Router, error) {
 		networksvc: networksvc,
 		jsvc:       jail.NewJailService(p.Conf, p.Logger, p.Metrics.Clone(statsd.Prefix("jail")), utils.Wrap{}),
 		fssvc:      filesystem.NewFilesystemService(p.Conf, p.Logger, p.Metrics.Clone(statsd.Prefix("filesystem")), utils.Wrap{}),
+		binCache:   jail.NewBinaryCache(),
 	}
 	router := mux.NewRouter()
 	router.HandleFunc("/healthcheck", h.healthcheckHandler()).Methods(http.MethodGet)
