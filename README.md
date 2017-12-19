@@ -5,10 +5,9 @@
 Sky Island is a FreeBSD based, Jail driven, ZFS backed, FaaS/serverless platform for running Go functions.  Interaction is via the HTTP JSON API.
 
 <p align="left">
+  <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-orange.svg?" alt="License"></a>
   <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.0.0-green.svg?" alt="Version"></a>
 </p>
-
-[![License](https://img.shields.io/badge/License-BSD%203--Clause-orange.svg)](https://opensource.org/licenses/BSD-3-Clause) 
 
 
 ## How It Works
