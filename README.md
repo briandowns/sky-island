@@ -52,7 +52,7 @@ To run Sky Island, run the command below.
 
 ## IP Address Management
 
- Sky Island config file has an IP4 section to configure how it handles jails IP addressing jails.  If a request is received that indicates a jail needs an IP address, Sky Island checks to see if there are available addresses and returns one to be assigned to the execution jail. 
+ The Sky Island config file has an IP4 section to configure how it handles jails IP addressing.  If a request is received that indicates a jail needs an IP address, Sky Island checks to see if there is an available address and returns one to be assigned to the execution jail. Use the admin API, described below, to manage the IP pool and to see which jail is associated with which IP and visa versa.
 
  The subnet that Sky Island exists on should have DHCP turned off or at a minimum, make sure that the IP pools aren't overlapping.
 
