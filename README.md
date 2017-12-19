@@ -2,7 +2,7 @@
 
 **Experimental** *ALPHA stage* 
 
-Sky Island is a FreeBSD based, Jail driven, ZFS backed, FaaS/serverless platform for running Go functions.  Interaction is via the HTTP JSON API.
+Sky Island is a FaaS/serverless platform built for FreeBSD, Jail driven, on ZFS, for running Go functions.  Interaction is via the REST API.
 
 <p align="left">
   <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-orange.svg?" alt="License"></a>
