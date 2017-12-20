@@ -40,7 +40,7 @@ Result
 * lib32.txz installed
 * ZFS
 * Go version >= 1.9 
-* Make sure that `jails_enabled="YES"` is present in the "/etc/rc.conf" file
+* Make sure that `jail_enabled="YES"` is present in the "/etc/rc.conf" file
 
 ## System Initialization
 
