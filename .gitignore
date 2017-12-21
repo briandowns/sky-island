@@ -35,3 +35,7 @@ sky-island.tgz
 bin/*
 
 config.json
+
+contrib/virtualbox/packer_cache
+contrib/virtualbox/packer_virtualbox-iso_virtualbox.box
+contrib/virtualbox/output-virtualbox-iso

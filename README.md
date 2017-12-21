@@ -72,6 +72,10 @@ This is accomplished by running:
 
 The above can be adequate however for some folks, you might want to have Sky Island controlled through the RC system. An RC script is included as well as a target in the Makefile to install it.  `make install`
 
+## VirtualBox Appliance
+
+A VirtualBox appliance is provided via a Packer build [here](https://github.com/briandowns/sky-island/tree/master/contrib/virtualbox) to allow for easier testing.
+
 ## Running Sky Island
 
 To run Sky Island, run the command below.
@@ -119,6 +123,8 @@ Brian Downs [@bdowns328](http://twitter.com/bdowns328)
 ## License
 
 Sky Island source code is available under the BSD 3 Clause [License](/LICENSE).
+
+Inspired by [tidwall](http://github.com/tidwall)
 
 ## 
 

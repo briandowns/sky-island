@@ -1,0 +1,65 @@
+{
+    "variables": {
+        "sky-island_name": "sky-island",
+        "version": "0.0.0",
+        "iso_url": "http://ftp.freebsd.org/pub/FreeBSD/releases/amd64/amd64/ISO-IMAGES/11.1/FreeBSD-11.1-RELEASE-amd64-disc1.iso",
+        "iso_checksum": "ff4c749ea0aaaceedb2432ba3e0fd0c1b64f5a72141b1ec06b9ced52b5de0dbf",
+        "iso_checksum_type": "sha256",
+        "boot_wait": "60s",
+        "disk_size": "16384",
+        "http_directory": "http",
+        "ssh_username": "root",
+        "ssh_password": "packer",
+        "ssh_wait_timeout": "1000s",
+        "shutdown_command": "shutdown -p now",
+        "headless": "true"
+    },
+    "builders": [
+        {
+            "type": "virtualbox-iso",
+            "guest_os_type": "FreeBSD_64",
+            "vm_name": "{{user `sky-island_name`}}",
+            "iso_url": "{{user `iso_url`}}",
+            "iso_checksum": "{{user `iso_checksum`}}",
+            "iso_checksum_type": "{{user `iso_checksum_type`}}",
+            "boot_command": [
+                "<down><enter><wait>",
+                "dhclient -p /tmp/dhclient.pid -l /tmp/dhclient.lease em0<enter><wait5>",
+                "fetch -o /tmp/installerconfig http://{{ .HTTPIP }}:{{ .HTTPPort }}/installerconfig<enter><wait>",
+                "bsdinstall script /tmp/installerconfig; shutdown -r now<enter>"
+            ],
+            "boot_wait": "{{user `boot_wait`}}",
+            "disk_size": "{{user `disk_size`}}",
+            "http_directory": "http",
+            "ssh_username": "{{user `ssh_username`}}",
+            "ssh_password": "{{user `ssh_password`}}",
+            "ssh_wait_timeout": "{{user `ssh_wait_timeout`}}",
+            "shutdown_command": "{{user `shutdown_command`}}",
+            "headless": "{{user `headless`}}"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "scripts": [
+                "scripts/base.sh",
+                "scripts/vagrant.sh",
+                "scripts/install_sky-island.sh"
+            ],
+            "execute_command": "chmod +x {{ .Path }}; /bin/sh -c '{{ .Vars }} {{ .Path }}'"
+        },
+        {
+            "type": "shell",
+            "script": "scripts/vmguest.sh",
+            "execute_command": "chmod +x {{ .Path }}; /bin/sh -c '{{ .Vars }} {{ .Path }}'",
+            "only": [
+                "virtualbox-iso"
+            ]
+        },
+        {
+            "type": "shell",
+            "script": "scripts/cleanup.sh",
+            "execute_command": "chmod +x {{ .Path }}; /bin/sh -c '{{ .Vars }} {{ .Path }}'"
+        }
+    ]
+}

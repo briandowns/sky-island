@@ -1,0 +1,18 @@
+DISTRIBUTIONS="kernel.txz base.txz lib32.txz"
+
+for d in ada0 da0 vtbd0; do
+  if [ -e "/dev/$d" ]; then
+    export ZFSBOOT_DISKS=$d
+    break
+  fi
+done
+unset d
+export nonInteractive=YES
+
+#!/bin/sh
+echo "packer" | pw usermod root -h 0
+echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+sysrc sshd_enable="YES"
+interface="`ifconfig -l | cut -d' ' -f1`"
+sysrc ifconfig_$interface="dhcp"
