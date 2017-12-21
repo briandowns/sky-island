@@ -4,10 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"os/signal"
 	"strconv"
-	"strings"
 
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/handlers"
@@ -57,13 +55,6 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	r, err := exec.Command("uname", "-r").Output()
-	if err != nil {
-		logger.Log("error", err.Error())
-		os.Exit(1)
-	}
-	conf.Release = strings.Trim(string(r), "\n")
 
 	statsd.Address(conf.Jails.MonitoringAddr)
 	metrics, err := statsd.New()

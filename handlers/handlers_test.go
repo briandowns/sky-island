@@ -21,9 +21,8 @@ var (
 )
 
 var testConf = &config.Config{
-	HTTPPort:      3280,
-	GoVersion:     "1.9.2",
-	BaseSysPkgDir: "/tmp",
+	HTTPPort:  3280,
+	GoVersion: "1.9.2",
 	Jails: &config.Jails{
 		BaseJailDir: "/some/jail/dir",
 	},

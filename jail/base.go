@@ -25,12 +25,14 @@ func (j *jailService) downloadBaseSystem() error {
 	}
 	var g errgroup.Group
 	for _, p := range basePackages {
-		if utils.Exists("/tmp/" + j.conf.Release + "/" + p) {
+		file := "/tmp/" + j.conf.Release + "/" + p
+		if utils.Exists(file) {
 			continue
 		}
 		pkg := p
+		pkgFile := file
 		g.Go(func() error {
-			out, err := os.Create("/tmp/" + j.conf.Release + "/" + pkg)
+			out, err := os.Create(pkgFile)
 			if err != nil {
 				return err
 			}

@@ -1,6 +1,8 @@
 package filesystem
 
 import (
+	"fmt"
+
 	"github.com/briandowns/sky-island/config"
 	"github.com/briandowns/sky-island/utils"
 	gklog "github.com/go-kit/kit/log"
@@ -56,7 +58,8 @@ func (f *fsService) CloneBaseToJail(jname string) error {
 // CreateDataset creates a new ZFS Dataset
 func (f *fsService) CreateDataset() error {
 	dataset := f.conf.Filesystem.ZFSDataset + "/jails/releases/" + f.conf.Release
-	_, err := f.wrapper.Output("zfs", "create", "-p", dataset)
+	out, err := f.wrapper.CombinedOutput("zfs", "create", "-p", dataset)
+	fmt.Println(string(out))
 	return err
 }
 

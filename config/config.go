@@ -39,12 +39,10 @@ type Jails struct {
 // Config contains the parameters necessary to run sky-island
 type Config struct {
 	Release          string
-	SystemPort       int         `json:"system_port"`
 	HTTPPort         int         `json:"http_port"`
 	AdminAPIToken    string      `json:"admin_api_token"`
 	AdminTokenHeader string      `json:"admin_token_header"`
 	GoVersion        string      `json:"go_version"`
-	BaseSysPkgDir    string      `json:"base_sys_pkg_dir"`
 	Filesystem       *Filesystem `json:"filesystem"`
 	Network          *Network    `json:"network"`
 	Jails            *Jails      `json:"jails"`

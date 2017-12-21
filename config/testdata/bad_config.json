@@ -1,8 +1,7 @@
 {
-    "system_port": 3280,
-    "http_port": 3281,
+    "release": "/tmp/11.1-RELEASE",
+    "http_port": 3280,
     "go_version": "1.9.2",
-    "base_sys_pkg_dir": "/tmp/11.1-RELEASE",
     "filesystem": {
         "zfs_dataset": "zroot",
         "compression": false
