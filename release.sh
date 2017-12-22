@@ -12,4 +12,5 @@ for ARCH in ${ARCHS}; do
     rm -f ${BINARY}
 done
 
-exit 0
+
+
