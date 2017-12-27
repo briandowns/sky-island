@@ -3,6 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -48,11 +51,17 @@ type functionRunResponse struct {
 // build builds the binary from the request data
 func (h *handler) build(id, url, call string) ([]byte, error) {
 	importElems := strings.Split(url, "/")
-	td := &tmplData{
-		PKGName:    importElems[len(importElems)-1],
-		ImportPath: url,
-		Call:       call,
+	pkg := importElems[len(importElems)-1]
+	callFunc := strings.Split(call, "(")[0]
+
+	var td tmplData
+	if err := h.parse(&td, url, pkg, callFunc); err != nil {
+		fmt.Println(err)
+		return nil, err
 	}
+	td.Pkg = pkg
+	td.Call = call
+	fmt.Printf("%+v\n", td)
 	t, err := template.New(url).Parse(mainTmpl)
 	if err != nil {
 		return nil, err
@@ -125,7 +134,6 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 			return
 		}
 		defer h.jsvc.RemoveJail(id)
-
 		if req.CacheBust {
 			if err := h.rsvc.RemoveRepo(req.URL); err != nil {
 				h.logger.Log("error", err.Error())
@@ -134,6 +142,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 			}
 			h.binCache.Set(req.URL, "")
 		}
+
 		var binPath string
 		binPath = h.binCache.Get(req.URL)
 		if binPath != "" {
@@ -176,9 +185,57 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 // tmplData contains the data passed to the tempalte
 // engine to render the code for compilation
 type tmplData struct {
-	PKGName    string
+	Pkg        string
 	ImportPath string
 	Call       string
+	Results    []string
+}
+
+// AddReturns takes a pointer value to an AST FuncDecl and adds
+// all present returns from that function to the template data
+func (t *tmplData) AddReturns(fd *ast.FuncDecl) {
+	if len(fd.Type.Results.List) > 0 {
+		for _, result := range fd.Type.Results.List {
+			fmt.Printf("result: %+v\n", result)
+			r := fmt.Sprintf("%+v", result.Type)
+			fmt.Println(r)
+			t.Results = append(t.Results, r)
+		}
+	}
+}
+
+// parsePackage builds an AST from the given directory and any sub-
+// packages therein and assigns the necessary template data to the type
+func (h *handler) parse(td *tmplData, path, pkg, callFunc string) error {
+	fset := token.NewFileSet()
+	d, err := parser.ParseDir(fset, h.conf.Jails.BaseJailDir+buildJailSrcDirPath+path, nil, 0)
+	if err != nil {
+		return err
+	}
+	td.ImportPath = path
+
+	var stop bool
+	for pkgName := range d {
+		if pkgName == pkg {
+			for _, f := range d[pkgName].Files {
+				if stop {
+					break
+				}
+				ast.Inspect(f, func(n ast.Node) bool {
+					switch n.(type) {
+					case *ast.FuncDecl:
+						fc := n.(*ast.FuncDecl)
+						if fc.Name.String() == callFunc {
+							td.AddReturns(fc)
+							stop = true
+						}
+					}
+					return true
+				})
+			}
+		}
+	}
+	return nil
 }
 
 // mainTmpl is the template used for function execution
@@ -194,7 +251,7 @@ import (
 )
 
 func main() {
-	fmt.Print({{.PKGName}}.{{.Call}})
+	fmt.Print({{.Pkg}}.{{.Call}})
 }
 `
 
