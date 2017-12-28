@@ -10,7 +10,7 @@
 
 ## 
 
-Sky Island is a FaaS/serverless platform built for FreeBSD, jail driven, on ZFS, for running Go functions, with interaction through a REST API. 
+Sky Island is a FaaS platform built utilizing FreeBSD jails, on ZFS, for running raw Go functions, with interaction through a REST API. 
 
 ## How It Works
 
@@ -40,7 +40,7 @@ Result
 * Utilize existing Go code in any application at scale
 * Build workflows and pipelines with Sky Island as the execution engine
 * Testing
-* Low overhead and secure serverless
+* Low overhead and secure FaaS
 
 ## Requirements
 
