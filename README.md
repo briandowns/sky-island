@@ -14,20 +14,20 @@ Sky Island is a FaaS platform built utilizing FreeBSD jails, on ZFS, for running
 
 ## How It Works
 
-A request comes in to run a function. The request contains a Github URL to a Go repository containing the function. The request also contains the "call".  The call is what will be run including the arguments necessary to run the function.
+A request comes in to run a function. The request contains a git URL to a Go repository containing the function. The request also contains the "call".  The call is what will be run including any arguments.
 
-Upon successfully accepting the inbound request, the server will check if the repo has already been cloned and if not, it will clone it. From there, it will generate a "main.go" file and compile a binary in the "build" jail. The "build" jail holds all of the cloned repositories and will be reused on each request unless otherwise told not to.  Once a binary is created, an execution jail is created, the binary is copied into it, and is subsequently executed. The binary's output is then returned to the caller via an HTTP response to the original request.
+Upon successfully accepting the inbound request, Sky Island will check if there's a binary already for that repo and if so, will move to executing it. If there isn't, Sky Island will check to see if the repo exists. If not, it clones the repo, however if it does, it'll move on to the compile step and generate a "main.go" file and compile a binary in the "build" jail. The "build" jail holds all of the cloned repositories and will be reused on each request unless otherwise told not to.  Once a binary is created, an execution jail is created, the binary is copied into it, and executed. The binary's output is returned to the caller via an HTTP response to the original request.
 
 ### Examples
 
 Simple Call
 ```
-curl --silent -XPOST http://demo.skyisland.io:3281/api/v1/function -d '{"url": "github.com/mmcloughlin/geohash", "call": "Encode(100.1, 80.9)"}'
+curl --silent -XPOST http://demo.skyisland.io:3280/api/v1/function -d '{"url": "github.com/mmcloughlin/geohash", "call": "Encode(100.1, 80.9)"}'
 ```
 
 Cache Bust Call
 ```
-curl --silent -XPOST http://demo.skyisland.io:3281/api/v1/function -d '{"url": "github.com/mmcloughlin/geohash", "call": "Encode(100.1, 80.9)", "cache_bust": true}'
+curl --silent -XPOST http://demo.skyisland.io:3280/api/v1/function -d '{"url": "github.com/mmcloughlin/geohash", "call": "Encode(100.1, 80.9)", "cache_bust": true}'
 ```
 
 Result
@@ -37,10 +37,10 @@ Result
 
 ## Use Cases
 
-* Utilize existing Go code in any application at scale
+* Utilize existing Go code in any application
 * Build workflows and pipelines with Sky Island as the execution engine
 * Testing
-* Low overhead and secure FaaS
+* Low overhead
 
 ## Requirements
 
@@ -84,15 +84,15 @@ To run Sky Island, run the command below.
 
 ## IP Address Management
 
- The Sky Island config file has an IP4 section to configure how it handles jails IP addressing.  If a request is received that indicates a jail needs an IP address, Sky Island checks to see if there is an available address and returns one to be assigned to the execution jail. Use the admin API, described below, to manage the IP pool and to see which jail is associated with which IP and visa versa.
+The Sky Island config file has an IP4 section to configure how it handles jails IP addressing.  If a request is received that indicates a jail needs an IP address, Sky Island checks to see if there is an available address and returns one to be assigned to the execution jail. Use the admin API, described below, to manage the IP pool and to see which jail is associated with which IP and visa versa.
 
- The subnet that Sky Island exists on should have DHCP turned off or at a minimum, make sure that the IP pools aren't overlapping.
+The subnet that Sky Island exists on should have DHCP turned off or at a minimum, make sure that the IP pools aren't overlapping.
 
- There will be a future effort to support multiple IP4 pools.
+There will be a future effort to support multiple IP4 pools.
 
 ## Caching
 
-Sky Island tries it's best to respond to API requests as quickly as possible.  To achieve some level of speed, a number of caching mechanisms has been implemented for binaries and repositories.  Upon receiving a request via the API, Sky Island will check to see if there's an associated binary that's already been compiled. If there is, that artifact is used.  If there's no binary, Sky Island checks to see if the repository has been seen before and if so, uses the repo on disk and compiles a binary from there.  The binary will be added to the binary cache for later use.
+Sky Island tries it's best to respond to API requests as quickly as possible.  To achieve this, a number of caching mechanisms have been implemented for binaries and repositories.  Upon receiving a request via the API, Sky Island will check to see if there's an associated binary that's already been compiled. If there is, that artifact is used.  If there's no binary, Sky Island checks to see if the repository has been seen before and if so, uses the repo on disk and compiles a binary from there.  The binary will be added to the binary cache for later use.
 
 This cache can be busted however by including `cache_bust=true` in payload of a "function run" POST request. This will force Sky Island to clone the repo and build a new binary.
 
@@ -114,7 +114,7 @@ The Sky Island API provides insight into the Sky Island system. The healthcheck 
 
 ## Metrics
 
-By default, Sky Island uses StatsD to write out metrics. Jail created/removed counts, requests times, etc are reported.
+By default, Sky Island uses StatsD to write out metrics. Jail created/removed counts, request times, etc are reported.
 
 ## Contact
 
