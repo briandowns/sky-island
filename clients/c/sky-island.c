@@ -6,20 +6,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* client_t */
+/* client_opt_t holds the configuration for how
+ * the client should behave
+ */
 typedef struct {
   char* endpoint;
   bool skip_host_verify;
   bool skip_peer_verify;
-} client_t;
+} client_opt_t;
 
-/* response_t */
+/* response_t contains the response from the Sky Island API */
 typedef struct {
   unsigned long timestamp;
   char* data;
 } response_t;
 
-/* curl_fetch_st */
 struct curl_fetch_st {
   char* payload;
   size_t size;
@@ -76,7 +77,7 @@ CURLcode curl_fetch_url(CURL* ch,
 /* function is used to make the call to the API and returns back either NULL or
  * a pointer to a response_t. This memory will need to be freed by the caller
  */
-response_t* function(client_t* client, const char* url, const char* call) {
+response_t* function(client_opt_t* client, const char* url, const char* call) {
   CURL* ch;
   CURLcode ret_code;
 
@@ -142,6 +143,7 @@ response_t* function(client_t* client, const char* url, const char* call) {
   res->timestamp = (unsigned long)time(NULL);
   res->data = strdup(json_object_to_json_string(json));
 
+  // free the memory used by the JSON call
   json_object_put(json);
 
   return res;
