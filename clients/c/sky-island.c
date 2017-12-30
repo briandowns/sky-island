@@ -1,31 +1,42 @@
 #include <curl/curl.h>
 #include <json-c/json.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-struct client_t {
+/* client_opt_t holds the configuration for how
+ * the client should behave
+ */
+typedef struct {
   char* endpoint;
-};
+  bool skip_host_verify;
+  bool skip_peer_verify;
+} client_opt_t;
 
-struct response_t {
+/* response_t contains the response from the Sky Island API */
+typedef struct {
   unsigned long timestamp;
-  void* data;
-};
+  char* data;
+} response_t;
+
+/* free_response_t frees the memory used by a response*/
+void free_response_t(response_t* res) {
+  free(res->data);
+  free(res);
+}
 
 struct curl_fetch_st {
   char* payload;
   size_t size;
 };
 
-/* callback for curl fetch */
+/* curl_callback is a callback for curl fetch */
 size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
-  size_t realsize = size * nmemb; /* calculate buffer size */
-  struct curl_fetch_st* p =
-      (struct curl_fetch_st*)userp; /* cast pointer to fetch struct */
+  size_t realsize = size * nmemb;
+  struct curl_fetch_st* p = (struct curl_fetch_st*)userp;
 
-  /* expand buffer */
   p->payload = (char*)realloc(p->payload, p->size + realsize + 1);
 
   if (p->payload == NULL) {
@@ -34,17 +45,17 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     return -1;
   }
 
-  /* copy contents to buffer */
+  // copy contents to buffer
   memcpy(&(p->payload[p->size]), contents, realsize);
 
-  /* set new buffer size */
+  // set new buffer size
   p->size += realsize;
   p->payload[p->size] = 0;
 
   return realsize;
 }
 
-/* fetch and return url body via curl */
+/* curl_fetch_url fetches and return url body via curl */
 CURLcode curl_fetch_url(CURL* ch,
                         const char* url,
                         struct curl_fetch_st* fetch) {
@@ -56,24 +67,23 @@ CURLcode curl_fetch_url(CURL* ch,
     fprintf(stderr, "ERROR: Failed to allocate payload in curl_fetch_url");
     return CURLE_FAILED_INIT;
   }
-
   fetch->size = 0;
 
   curl_easy_setopt(ch, CURLOPT_URL, url);
   curl_easy_setopt(ch, CURLOPT_WRITEFUNCTION, curl_callback);
   curl_easy_setopt(ch, CURLOPT_WRITEDATA, (void*)fetch);
-  curl_easy_setopt(ch, CURLOPT_USERAGENT, "sky-island-agent/1.0");
+  curl_easy_setopt(ch, CURLOPT_USERAGENT, "sky-island/1.0");
   curl_easy_setopt(ch, CURLOPT_TIMEOUT, 5);
   curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 0);
 
   ret_code = curl_easy_perform(ch);
-
   return ret_code;
 }
 
-static int function(struct client_t* client,
-                    const char* url,
-                    const char* call) {
+/* function is used to make the call to the API and returns back either NULL or
+ * a pointer to a response_t. This memory will need to be freed by the caller
+ */
+response_t* function(client_opt_t* client, const char* url, const char* call) {
   CURL* ch;
   CURLcode ret_code;
 
@@ -86,7 +96,7 @@ static int function(struct client_t* client,
 
   if ((ch = curl_easy_init()) == NULL) {
     fprintf(stderr, "ERROR: Failed to create curl handle in fetch_session");
-    return -1;
+    return NULL;
   }
 
   headers = curl_slist_append(headers, "Accept: application/json");
@@ -101,6 +111,13 @@ static int function(struct client_t* client,
   curl_easy_setopt(ch, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ch, CURLOPT_POSTFIELDS, json_object_to_json_string(json));
 
+  if (client->skip_peer_verify) {
+    curl_easy_setopt(ch, CURLOPT_SSL_VERIFYPEER, 0L);
+  }
+  if (client->skip_host_verify) {
+    curl_easy_setopt(ch, CURLOPT_SSL_VERIFYHOST, 0L);
+  }
+
   ret_code = curl_fetch_url(ch, client->endpoint, cf);
   curl_easy_cleanup(ch);
   curl_slist_free_all(headers);
@@ -110,13 +127,13 @@ static int function(struct client_t* client,
   if (ret_code != CURLE_OK || cf->size < 1) {
     fprintf(stderr, "ERROR: Failed to fetch url (%s) - curl said: %s", url,
             curl_easy_strerror(ret_code));
-    return -1;
+    return NULL;
   }
 
   if (cf->payload == NULL) {
     fprintf(stderr, "ERROR: Failed to populate payload");
     free(cf->payload);
-    return -1;
+    return NULL;
   }
 
   json = json_tokener_parse_verbose(cf->payload, &jerr);
@@ -125,12 +142,15 @@ static int function(struct client_t* client,
   if (jerr != json_tokener_success) {
     fprintf(stderr, "ERROR: Failed to parse json string");
     json_object_put(json);
-    return -1;
+    return NULL;
   }
 
-  printf("%s\n", json_object_to_json_string(json));
+  response_t* res = malloc(sizeof(response_t));
+  res->timestamp = (unsigned long)time(NULL);
+  res->data = strdup(json_object_to_json_string(json));
 
+  // free the memory used by the JSON call
   json_object_put(json);
 
-  return 0;
+  return res;
 }
