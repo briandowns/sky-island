@@ -7,17 +7,17 @@
 #include <string.h>
 
 /* client_t */
-struct client_t {
+typedef struct {
   char* endpoint;
   bool skip_host_verify;
   bool skip_peer_verify;
-};
+} client_t;
 
 /* response_t */
-struct response_t {
+typedef struct {
   unsigned long timestamp;
-  void* data;
-};
+  char* data;
+} response_t;
 
 /* curl_fetch_st */
 struct curl_fetch_st {
@@ -60,7 +60,6 @@ CURLcode curl_fetch_url(CURL* ch,
     fprintf(stderr, "ERROR: Failed to allocate payload in curl_fetch_url");
     return CURLE_FAILED_INIT;
   }
-
   fetch->size = 0;
 
   curl_easy_setopt(ch, CURLOPT_URL, url);
@@ -71,13 +70,13 @@ CURLcode curl_fetch_url(CURL* ch,
   curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 0);
 
   ret_code = curl_easy_perform(ch);
-
   return ret_code;
 }
 
-static int function(struct client_t* client,
-                    const char* url,
-                    const char* call) {
+/* function is used to make the call to the API and returns back either NULL or
+ * a pointer to a response_t. This memory will need to be freed by the caller
+ */
+response_t* function(client_t* client, const char* url, const char* call) {
   CURL* ch;
   CURLcode ret_code;
 
@@ -90,7 +89,7 @@ static int function(struct client_t* client,
 
   if ((ch = curl_easy_init()) == NULL) {
     fprintf(stderr, "ERROR: Failed to create curl handle in fetch_session");
-    return -1;
+    return NULL;
   }
 
   headers = curl_slist_append(headers, "Accept: application/json");
@@ -121,13 +120,13 @@ static int function(struct client_t* client,
   if (ret_code != CURLE_OK || cf->size < 1) {
     fprintf(stderr, "ERROR: Failed to fetch url (%s) - curl said: %s", url,
             curl_easy_strerror(ret_code));
-    return -1;
+    return NULL;
   }
 
   if (cf->payload == NULL) {
     fprintf(stderr, "ERROR: Failed to populate payload");
     free(cf->payload);
-    return -1;
+    return NULL;
   }
 
   json = json_tokener_parse_verbose(cf->payload, &jerr);
@@ -136,12 +135,14 @@ static int function(struct client_t* client,
   if (jerr != json_tokener_success) {
     fprintf(stderr, "ERROR: Failed to parse json string");
     json_object_put(json);
-    return -1;
+    return NULL;
   }
 
-  printf("%s\n", json_object_to_json_string(json));
+  response_t* res = malloc(sizeof(response_t));
+  res->timestamp = (unsigned long)time(NULL);
+  res->data = strdup(json_object_to_json_string(json));
 
   json_object_put(json);
 
-  return 0;
+  return res;
 }
