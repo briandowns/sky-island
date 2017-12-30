@@ -1,31 +1,35 @@
 #include <curl/curl.h>
 #include <json-c/json.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/* client_t */
 struct client_t {
   char* endpoint;
+  bool skip_host_verify;
+  bool skip_peer_verify;
 };
 
+/* response_t */
 struct response_t {
   unsigned long timestamp;
   void* data;
 };
 
+/* curl_fetch_st */
 struct curl_fetch_st {
   char* payload;
   size_t size;
 };
 
-/* callback for curl fetch */
+/* curl_callback is a callback for curl fetch */
 size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
-  size_t realsize = size * nmemb; /* calculate buffer size */
-  struct curl_fetch_st* p =
-      (struct curl_fetch_st*)userp; /* cast pointer to fetch struct */
+  size_t realsize = size * nmemb;
+  struct curl_fetch_st* p = (struct curl_fetch_st*)userp;
 
-  /* expand buffer */
   p->payload = (char*)realloc(p->payload, p->size + realsize + 1);
 
   if (p->payload == NULL) {
@@ -34,17 +38,17 @@ size_t curl_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     return -1;
   }
 
-  /* copy contents to buffer */
+  // copy contents to buffer
   memcpy(&(p->payload[p->size]), contents, realsize);
 
-  /* set new buffer size */
+  // set new buffer size
   p->size += realsize;
   p->payload[p->size] = 0;
 
   return realsize;
 }
 
-/* fetch and return url body via curl */
+/* curl_fetch_url fetches and return url body via curl */
 CURLcode curl_fetch_url(CURL* ch,
                         const char* url,
                         struct curl_fetch_st* fetch) {
@@ -62,7 +66,7 @@ CURLcode curl_fetch_url(CURL* ch,
   curl_easy_setopt(ch, CURLOPT_URL, url);
   curl_easy_setopt(ch, CURLOPT_WRITEFUNCTION, curl_callback);
   curl_easy_setopt(ch, CURLOPT_WRITEDATA, (void*)fetch);
-  curl_easy_setopt(ch, CURLOPT_USERAGENT, "sky-island-agent/1.0");
+  curl_easy_setopt(ch, CURLOPT_USERAGENT, "sky-island/1.0");
   curl_easy_setopt(ch, CURLOPT_TIMEOUT, 5);
   curl_easy_setopt(ch, CURLOPT_FOLLOWLOCATION, 0);
 
@@ -100,6 +104,13 @@ static int function(struct client_t* client,
   curl_easy_setopt(ch, CURLOPT_CUSTOMREQUEST, "POST");
   curl_easy_setopt(ch, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ch, CURLOPT_POSTFIELDS, json_object_to_json_string(json));
+
+  if (client->skip_peer_verify) {
+    curl_easy_setopt(ch, CURLOPT_SSL_VERIFYPEER, 0L);
+  }
+  if (client->skip_host_verify) {
+    curl_easy_setopt(ch, CURLOPT_SSL_VERIFYHOST, 0L);
+  }
 
   ret_code = curl_fetch_url(ch, client->endpoint, cf);
   curl_easy_cleanup(ch);
