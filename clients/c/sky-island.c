@@ -21,6 +21,12 @@ typedef struct {
   char* data;
 } response_t;
 
+/* free_response_t frees the memory used by a response*/
+void free_response_t(response_t* res) {
+  free(res->data);
+  free(res);
+}
+
 struct curl_fetch_st {
   char* payload;
   size_t size;
