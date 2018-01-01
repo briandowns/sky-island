@@ -1,7 +1,7 @@
 #!/bin/sh
 
 NAME="sky-island"
-VERSION="0.1"
+VERSION="0.2"
 ARCHS="386 amd64"
 
 echo "Building release..."
