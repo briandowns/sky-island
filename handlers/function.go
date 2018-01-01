@@ -135,7 +135,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 			h.binCache.Set(req.URL, "")
 		}
 		var binPath string
-		binPath = h.binCache.Get(req.URL)
+		binPath = h.binCache.Get(req.URL + "." + req.Call)
 		if binPath != "" {
 			execRes, err := h.execute(id, binPath, req.IP4)
 			if err != nil {
@@ -168,7 +168,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
-		h.binCache.Set(req.URL, h.conf.Jails.BaseJailDir+"/build/tmp/"+id)
+		h.binCache.Set(req.URL+"."+req.Call, h.conf.Jails.BaseJailDir+"/build/tmp/"+id)
 		h.ren.JSON(w, http.StatusOK, functionRunResponse{Timestamp: time.Now().UTC().Unix(), Data: string(execRes)})
 	}
 }
