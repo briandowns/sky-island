@@ -8,13 +8,14 @@ import (
 	"time"
 )
 
-// Data
+// Data holds the response from the API
 type Data struct {
-	Timestamp int64
-	Data      interface{}
+	Timestamp int64  `json:"timestamp"`
+	Data      string `json:"data"`
 }
 
-// Client
+// Client contains the HTTP client and the endpoint
+// it needs to communicate with
 type Client struct {
 	hc       *http.Client
 	endpoint string
@@ -44,7 +45,7 @@ func (c *Client) Function(url, call string) (*Data, error) {
 	}
 	defer res.Body.Close()
 	var data Data
-	if err := json.NewDecoder(res.Body).Decode(res); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
 		return nil, err
 	}
 	return &data, nil
