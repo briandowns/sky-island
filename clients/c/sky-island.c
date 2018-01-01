@@ -7,8 +7,7 @@
 #include <string.h>
 
 /* client_opt_t holds the configuration for how
- * the client should behave
- */
+ * the client should behave */
 typedef struct {
   char* endpoint;
   bool skip_host_verify;
@@ -81,8 +80,7 @@ CURLcode curl_fetch_url(CURL* ch,
 }
 
 /* function is used to make the call to the API and returns back either NULL or
- * a pointer to a response_t. This memory will need to be freed by the caller
- */
+ * a pointer to a response_t. This memory will need to be freed by the caller */
 response_t* function(client_opt_t* client, const char* url, const char* call) {
   CURL* ch;
   CURLcode ret_code;
