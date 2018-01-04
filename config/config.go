@@ -34,6 +34,8 @@ type Jails struct {
 	CachePurgeAfter        string `json:"cache_purge_after"`
 	ChildrenMax            int    `json:"children_max"`
 	MonitoringAddr         string `json:"monitoring_addr"`
+	BuildTimeout           string `json:"build_timeout"`
+	ExecTimeout            string `json:"exec_timeout"`
 }
 
 // Config contains the parameters necessary to run sky-island
