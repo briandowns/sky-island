@@ -80,7 +80,7 @@ func (h *handler) build(id, url, call string) ([]byte, error) {
 	return buildCmd.CombinedOutput()
 }
 
-// execute executes the built binary in an execution jail and returns the output
+// execute creates a jail, executes the built binary and returns the output
 func (h *handler) execute(id, binPath string, ip4 bool) ([]byte, error) {
 	dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
 	if err := copyBinary(dst, binPath); err != nil {
