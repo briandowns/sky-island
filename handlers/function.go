@@ -74,7 +74,7 @@ func (h *handler) build(id, url, call string) ([]byte, error) {
 		return nil, err
 	}
 	buildCommand := []string{jailGoBin, "build", "-o", "/tmp/" + id, "-v", url + "/cmd"}
-	fullBuildArgs := []string{"-c", "-n", id, "ip4=disable", "path=" + h.conf.Jails.BaseJailDir + "/build", "host.hostname=build", "mount.devfs"}
+	fullBuildArgs := []string{"-c", "-n", id, "ip4=disable", "exec.timeout=" + h.conf.Jails.BuildTimeout, "path=" + h.conf.Jails.BaseJailDir + "/build", "host.hostname=build", "mount.devfs"}
 	fullBuildArgs = append(fullBuildArgs, buildCommand...)
 	buildCmd := exec.Command("jail", fullBuildArgs...)
 	return buildCmd.CombinedOutput()
@@ -87,7 +87,7 @@ func (h *handler) execute(id, binPath string, ip4 bool) ([]byte, error) {
 		return nil, err
 	}
 	cm := strconv.Itoa(h.conf.Jails.ChildrenMax)
-	funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
+	funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "exec.timeout=" + h.conf.Jails.ExecTimeout, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
 	if ip4 {
 		ip, err := h.networksvc.Allocate([]byte(id))
 		if err != nil {
