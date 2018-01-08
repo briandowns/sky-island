@@ -3,7 +3,7 @@
 set -ex
 
 echo "Installing monitoring software"
-pkg install -y influxdb telegraf grafana4
+pkg install -y influxdb telegraf grafana4 git
 
 echo "Installing Sky Island..."
 git clone https://github.com/briandowns/sky-island.git
