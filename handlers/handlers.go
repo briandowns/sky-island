@@ -59,6 +59,7 @@ func AddHandlers(p *Params) (*mux.Router, error) {
 		binCache:   jail.NewBinaryCache(),
 	}
 	router := mux.NewRouter()
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	router.HandleFunc("/healthcheck", h.healthcheckHandler()).Methods(http.MethodGet)
 
 	fr := router.PathPrefix(apiPrefix).Subrouter()
