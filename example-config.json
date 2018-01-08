@@ -27,6 +27,8 @@
         "cache_default_expiration": "8h",
         "cache_purge_after": "24h",
         "children_max": 0,
-        "monitoring_addr": "127.0.0.1"
+        "monitoring_addr": "127.0.0.1",
+        "build_timeout": "10s",
+        "exec_timeout": "5s"
     }
 }

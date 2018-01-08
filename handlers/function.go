@@ -74,20 +74,20 @@ func (h *handler) build(id, url, call string) ([]byte, error) {
 		return nil, err
 	}
 	buildCommand := []string{jailGoBin, "build", "-o", "/tmp/" + id, "-v", url + "/cmd"}
-	fullBuildArgs := []string{"-c", "-n", id, "ip4=disable", "path=" + h.conf.Jails.BaseJailDir + "/build", "host.hostname=build", "mount.devfs"}
+	fullBuildArgs := []string{"-c", "-n", id, "ip4=disable", "exec.timeout=" + h.conf.Jails.BuildTimeout, "path=" + h.conf.Jails.BaseJailDir + "/build", "host.hostname=build", "mount.devfs"}
 	fullBuildArgs = append(fullBuildArgs, buildCommand...)
 	buildCmd := exec.Command("jail", fullBuildArgs...)
 	return buildCmd.CombinedOutput()
 }
 
-// execute executes the built binary in an execution jail and returns the output
+// execute creates a jail, executes the built binary and returns the output
 func (h *handler) execute(id, binPath string, ip4 bool) ([]byte, error) {
 	dst := filepath.Join(h.conf.Jails.BaseJailDir, id, "tmp", id)
 	if err := copyBinary(dst, binPath); err != nil {
 		return nil, err
 	}
 	cm := strconv.Itoa(h.conf.Jails.ChildrenMax)
-	funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
+	funcExecArgs := []string{"-c", "-n", id, "children.max=" + cm, "exec.timeout=" + h.conf.Jails.ExecTimeout, "path=" + h.conf.Jails.BaseJailDir + "/" + id, "host.hostname=" + id, "mount.devfs"}
 	if ip4 {
 		ip, err := h.networksvc.Allocate([]byte(id))
 		if err != nil {
@@ -135,7 +135,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 			h.binCache.Set(req.URL, "")
 		}
 		var binPath string
-		binPath = h.binCache.Get(req.URL)
+		binPath = h.binCache.Get(req.URL + "." + req.Call)
 		if binPath != "" {
 			execRes, err := h.execute(id, binPath, req.IP4)
 			if err != nil {
@@ -168,7 +168,7 @@ func (h *handler) functionRunHandler() http.HandlerFunc {
 			h.ren.JSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 			return
 		}
-		h.binCache.Set(req.URL, h.conf.Jails.BaseJailDir+"/build/tmp/"+id)
+		h.binCache.Set(req.URL+"."+req.Call, h.conf.Jails.BaseJailDir+"/build/tmp/"+id)
 		h.ren.JSON(w, http.StatusOK, functionRunResponse{Timestamp: time.Now().UTC().Unix(), Data: string(execRes)})
 	}
 }

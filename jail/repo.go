@@ -37,7 +37,8 @@ func (r *repoService) CloneRepo(jpath, fname string) error {
 	t := r.metrics.NewTiming()
 	defer t.Send("clone")
 	_, err := git.PlainClone(jpath+"/"+fname, false, &git.CloneOptions{
-		URL: "https://" + fname + ".git",
+		URL:   "https://" + fname + ".git",
+		Depth: 1,
 	})
 	if err != nil {
 		return err
