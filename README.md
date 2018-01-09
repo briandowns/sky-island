@@ -3,7 +3,7 @@
 <p align="left">
   <a href="https://godoc.org/github.com/briandowns/sky-island"><img src="https://godoc.org/github.com/briandowns/sky-island?status.svg" alt="GoDoc"></a>
   <a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-orange.svg?" alt="License"></a>
-  <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.1.0-green.svg?" alt="Version"></a>
+  <a href="https://github.com/briandowns/sky-island/releases"><img src="https://img.shields.io/badge/version-0.2.0-green.svg?" alt="Version"></a>
 </p>
 
 **Experimental** / *ALPHA stage* 
@@ -102,7 +102,7 @@ The Sky Island API provides insight into the Sky Island system. The healthcheck 
 
 | Method | Resource                    | Description                                                            |
 | :----- | :-------                    | :----------                                                            |
-| GET    | /api/v1/healthcheck         | Verifies the service is up and running                                 | 
+| GET    | /healthcheck                | Verifies the service is up and running                                 | 
 | POST   | /api/v1/function            | Endpoint that receives function run requests                           |
 | GET    | /api/v1/admin/api-stats     | API statistics                                                         | 
 | GET    | /api/v1/admin/jails         | Get a list of the running jails                                        |
