@@ -1,0 +1,211 @@
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <meta name="description" content="Administrative dashboard for Sky Island">
+  <meta name="author" content="Nathan Jenan">
+
+  <title>Sky Island Admin Dashboard</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp"
+    crossorigin="anonymous">
+
+  <link rel="stylesheet" href="./style.css">
+
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.11/handlebars.js"></script>
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Sky Island</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container main-container">
+
+    <script id="status-template" type="text/x-handlebars-template">
+      <div id="healthcheck" class="alert {{systemStatusStyle}}">
+        <span>System Status: </span>
+        <span id="healthcheck-text">{{systemStatus}}</span>
+      </div>
+      <h3 class="bold">STATS</h3>
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <table class="table">
+            <tr>
+              <td>
+                <b>Uptime:</b>
+              </td>
+              <td>
+                <span id="uptime">{{uptime}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <b>Count:</b>
+              </td>
+              <td>
+                <span id="count">{{count}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <b>Total Response Time:</b>
+              </td>
+              <td>
+                <span id="total_response_time">{{totalResponseTime}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <b>Average Response Time:</b>
+              </td>
+              <td>
+                <span id="average_response_time">{{averageResponseTime}}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <b>Status Codes:</b>
+              </td>
+              <td>
+                {{#each statusCodes}}
+                <div>
+                  <i>{{this.code}}: </i>
+                  <span>{{this.count}}</span>
+                </div>
+                {{/each}}
+              </td>
+            </tr>
+
+            <!--
+
+              {
+                  "pid": 63767,
+                  "uptime": "48h8m4.133220786s",
+                  "uptime_sec": 173284.133220786,
+                  "time": "2017-12-31 03:32:07.010951545 +0000 UTC m=+173284.136725386",
+                  "unixtime": 1514691127,
+                  "status_code_count": {},
+                  "total_status_code_count": {
+                      "200": 132,
+                      "403": 2,
+                      "404": 7,
+                      "405": 1
+                  },
+                  "count": 0,
+                  "total_count": 142,
+                  "total_response_time": "1.630666656s",
+                  "total_response_time_sec": 1.630666656,
+                  "average_response_time": "11.483568ms",
+                  "average_response_time_sec": 0.011483568
+              }
+
+            -->
+          </table>
+          <div>
+            <small class="asoftime">as of
+              <span id="time">{{asOfTime}}</span>
+            </small>
+          </div>
+        </div>
+    </script>
+
+    <span id="status-insertion-point"></span>
+
+
+    <h3 class="bold">JAILS</h3>
+    <script id="jails-template" type="text/x-handlebars-template">
+
+      {{#unless jails.length}}
+      <div>No jails exist.</div>
+      {{/unless}} {{#each jails}}
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <h4>{{this.name}}</h4>
+          <div>
+            <b>HOST: </b>
+            <span>{{this.host}}</span>
+          </div>
+          <div>
+            <b>IP4: </b>
+            <span>{{this.ip4}}</span>
+          </div>
+          <div>
+            <b>IP6: </b>
+            <span>{{this.ip6}}</span>
+          </div>
+          <div>
+            <b>JID: </b>
+            <span>{{this.host}}</span>
+          </div>
+          <div>
+            <b>OS: </b>
+            <span>{{this.os}}</span>
+          </div>
+          <div>
+            <b>PATH: </b>
+            <span>{{this.path}}</span>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </script>
+
+
+
+    <!--
+    {
+        "jails": [
+            {
+                "host": "new",
+                "ip4": "disable",
+                "ip6": "disable",
+                "jid": 188,
+                "name": "b6ada3ce-ede7-11e7-b0fe-12e74a189a08",
+                "OSRelease": "11.1-RELEASE-p4",
+                "path": "/zroot/jails/b6ada3ce-ede7-11e7-b0fe-12e74a189a08",
+                "hostname": "b6ada3ce-ede7-11e7-b0fe-12e74a189a08"
+            }
+        ]
+    }
+    -->
+
+    <span id="jails-insertion-point"></span>
+
+    </div>
+  </div>
+  <!-- /.container -->
+
+
+  <!-- Bootstrap core JavaScript
+    ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="./script.js"></script>
+</body>
+
+</html>

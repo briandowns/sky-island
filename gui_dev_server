@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+
+cd static
+python -m SimpleHTTPServer 8080
