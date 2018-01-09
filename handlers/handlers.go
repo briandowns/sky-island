@@ -59,7 +59,6 @@ func AddHandlers(p *Params) (*mux.Router, error) {
 		binCache:   jail.NewBinaryCache(),
 	}
 	router := mux.NewRouter()
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	router.HandleFunc("/healthcheck", h.healthcheckHandler()).Methods(http.MethodGet)
 
 	fr := router.PathPrefix(apiPrefix).Subrouter()
@@ -74,6 +73,7 @@ func AddHandlers(p *Params) (*mux.Router, error) {
 	ar.Path("/admin/network/ips").HandlerFunc(h.auth(h.networkHandler())).Methods(http.MethodGet)
 	ar.Path("/admin/network/ips").HandlerFunc(h.auth(h.networkHandler())).Queries("state", "{state}").Methods(http.MethodGet)
 	ar.Path("/admin/network/ip").HandlerFunc(h.auth(h.updateIPStateHandler())).Methods(http.MethodPut)
+	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 	return router, nil
 }
 
