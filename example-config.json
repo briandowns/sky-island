@@ -1,5 +1,5 @@
 {
-    "release": "/tmp/11.1-RELEASE",
+    "release": "11.1-RELEASE",
     "http_port": 3280,
     "admin_api_token": "asdfasdfasdfasdf",
     "admin_token_header": "X-Sky-Island-Token",
