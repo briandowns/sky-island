@@ -10,7 +10,7 @@
 
 ## 
 
-Sky Island is a FaaS platform built utilizing FreeBSD jails, on ZFS, for running raw Go functions, with interaction through a REST API. 
+Sky Island is a FaaS platform built utilizing FreeBSD jails, on ZFS, for running raw Go functions, with interaction through a REST API and inspired by [tidwall](http://github.com/tidwall).
 
 ## How It Works
 
@@ -124,7 +124,6 @@ Brian Downs [@bdowns328](http://twitter.com/bdowns328)
 
 Sky Island source code is available under the BSD 3 Clause [License](/LICENSE).
 
-Inspired by [tidwall](http://github.com/tidwall)
 
 ## 
 
