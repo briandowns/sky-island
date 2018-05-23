@@ -16,6 +16,12 @@ import (
 
 const apiPrefix = "/api/v1"
 
+// httpISEPayload is the returned payload when an
+// internal server error is encountered
+var httpISEPayload = map[string]string{
+	"error": http.StatusText(http.StatusInternalServerError),
+}
+
 // Params contains the necessary dependencies
 // for the handler type and handlers derived
 type Params struct {
