@@ -59,7 +59,7 @@ func (j *jailService) extractBasePkgs() error {
 	t := j.metrics.NewTiming()
 	defer t.Send("base.extract_packages_time")
 	fullPath := j.conf.Jails.BaseJailDir + "/releases/" + j.conf.Release
-	var txz archiver.TarXz
+	txz := &archiver.TarXz{}
 	for _, p := range basePackages {
 		if err := txz.Unarchive("/tmp/"+j.conf.Release+"/"+p, fullPath); err != nil {
 			return err
@@ -185,7 +185,7 @@ func (j *jailService) installGo() error {
 	}
 	src := fmt.Sprintf("/tmp/go%s.freebsd-amd64.tar.gz", j.conf.GoVersion)
 	dst := fmt.Sprintf("%s/releases/%s/usr/local", j.conf.Jails.BaseJailDir, j.conf.Release)
-	var tgz archiver.TarGz
+	tgz := &archiver.TarGz{}
 	if err := tgz.Unarchive(src, dst); err != nil {
 		return err
 	}
