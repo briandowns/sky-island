@@ -59,8 +59,9 @@ func (j *jailService) extractBasePkgs() error {
 	t := j.metrics.NewTiming()
 	defer t.Send("base.extract_packages_time")
 	fullPath := j.conf.Jails.BaseJailDir + "/releases/" + j.conf.Release
+	var txz archiver.TarXz
 	for _, p := range basePackages {
-		if err := archiver.TarXZ.Open("/tmp/"+j.conf.Release+"/"+p, fullPath); err != nil {
+		if err := txz.Unarchive("/tmp/"+j.conf.Release+"/"+p, fullPath); err != nil {
 			return err
 		}
 	}
@@ -132,10 +133,7 @@ func (j *jailService) setupLocaltime() error {
 // setBaseJailConf configures the jail to have the same resolv.conf
 // and localtime as the host system
 func (j *jailService) setBaseJailConf() error {
-	if err := j.setupResolvConf(); err != nil {
-		return err
-	}
-	return nil
+	return j.setupResolvConf()
 }
 
 // downloadGo downloads the configured version of Go only if it hasn't
@@ -187,11 +185,9 @@ func (j *jailService) installGo() error {
 	}
 	src := fmt.Sprintf("/tmp/go%s.freebsd-amd64.tar.gz", j.conf.GoVersion)
 	dst := fmt.Sprintf("%s/releases/%s/usr/local", j.conf.Jails.BaseJailDir, j.conf.Release)
-	if err := archiver.TarGz.Open(src, dst); err != nil {
+	var tgz archiver.TarGz
+	if err := tgz.Unarchive(src, dst); err != nil {
 		return err
 	}
-	if err := j.setupGoEnv(); err != nil {
-		return err
-	}
-	return nil
+	return j.setupGoEnv()
 }
